@@ -3,19 +3,19 @@
 #define OPERATOR_H
 
 #include "Constants.h"
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 class Operator
 {
-public:
-	Operator(const std::string& value, const OpType type);
-	Operator();
-	~Operator();
+  public:
+    Operator(const std::string& value, OpType type);
+    Operator();
+    ~Operator();
 
-private:
-	std::string m_value;
-	OpType m_type;
+  private:
+    std::string m_value;
+    OpType m_type;
 };
 
 #endif

@@ -1,15 +1,5 @@
 #include "NormalForm.h"
 
+NormalForm::~NormalForm() = default;
 
-
-NormalForm::NormalForm(const std::shared_ptr<Formula>& formula)
-{
-	m_formula = formula;
-}
-
-
-NormalForm::~NormalForm()
-{
-}
-
-void NormalForm::Calculate(){}
+void NormalForm::Calculate() {}

@@ -5,13 +5,12 @@
 #include <memory>
 #include <set>
 #include <spot/tl/formula.hh>
-#include <stdio.h>
 #include <vector>
 
 class Obligation
 {
   public:
-    Obligation(const spot::formula& formula);
+    explicit Obligation(spot::formula formula);
     virtual ~Obligation();
     virtual void Calculate() = 0;
 

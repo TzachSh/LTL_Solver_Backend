@@ -1,5 +1,7 @@
 #include "Obligation.h"
 
-Obligation::Obligation(const spot::formula& formula) : m_formula { formula } {}
+#include <utility>
 
-Obligation::~Obligation() {}
+Obligation::Obligation(spot::formula formula) : m_formula { std::move(formula) } {}
+
+Obligation::~Obligation() = default;

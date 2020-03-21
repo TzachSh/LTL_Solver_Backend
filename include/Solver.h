@@ -9,7 +9,7 @@ class Solver {
 public:
   Solver(/* args */);
   ~Solver();
-  bool Solve(Formula formula);
+  bool Solve(const Formula& formula);
 
 private:
   /* data */

@@ -3,7 +3,6 @@
 
 
 #include "Operator.h"
-#include <stdio.h>
 #include <memory>
 
 class Formula

@@ -1,7 +1,10 @@
 #include "Solver.h"
 
-Solver::Solver(/* args */) {}
+Solver::Solver() = default;
 
-Solver::~Solver() {}
+Solver::~Solver() = default;
 
-bool Solver::Solve(Formula formula) {return true;}
+bool Solver::Solve(const Formula& formula)
+{
+    return true;
+}

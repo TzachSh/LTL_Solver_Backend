@@ -8,7 +8,4 @@ Literal::Literal(const std::string& variable, const bool isNegation)
 	m_isNegation = isNegation;
 }
 
-
-Literal::~Literal()
-{
-}
+Literal::~Literal() = default;

@@ -3,14 +3,14 @@
 
 OlgChecker::OlgChecker(const ObligationSet& obligationSet) : m_obligationSet { obligationSet } {};
 
-OlgChecker::~OlgChecker() {};
+OlgChecker::~OlgChecker() = default;
 
 bool OlgChecker::IsNegation(const spot::formula& literal)
 {
     return literal.kind() == spot::op::Not;
 }
 
-bool OlgChecker::CheckObligation(std::set<spot::formula> obligation)
+bool OlgChecker::CheckObligation(const std::set<spot::formula>& obligation)
 {
     z3::context context;
     z3::solver solver { context };
@@ -36,8 +36,11 @@ bool OlgChecker::CheckObligation(std::set<spot::formula> obligation)
     case z3::sat:
         return true;
     case z3::unsat:
+    case z3::unknown:
         return false;
     }
+
+    return false;
 }
 
 bool OlgChecker::IsConsistent()

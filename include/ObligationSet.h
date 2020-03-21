@@ -11,9 +11,9 @@
 class ObligationSet : public Obligation
 {
   public:
-    ObligationSet(const spot::formula& formula);
-    ~ObligationSet();
-    virtual void Calculate();
+    explicit ObligationSet(const spot::formula& formula);
+    ~ObligationSet() override;
+    void Calculate() override;
     std::vector<std::set<spot::formula>> Get() const;
 
   private:

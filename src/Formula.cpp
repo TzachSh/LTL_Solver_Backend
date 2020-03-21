@@ -1,10 +1,6 @@
 #include "Formula.h"
 
-
-
-Formula::Formula()
-{
-}
+Formula::Formula() = default;
 
 Formula::Formula(const Operator& op, const std::shared_ptr<Formula>& leftClause, const std::shared_ptr<Formula>& rightClause)
 {

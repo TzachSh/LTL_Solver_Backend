@@ -7,10 +7,6 @@ Operator::Operator(const std::string& value, OpType type)
 	m_type = type;
 }
 
-Operator::Operator()
-{
-}
+Operator::Operator() = default;
 
-Operator::~Operator()
-{
-}
+Operator::~Operator() = default;

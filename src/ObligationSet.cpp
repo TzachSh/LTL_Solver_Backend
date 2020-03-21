@@ -2,7 +2,7 @@
 
 ObligationSet::ObligationSet(const spot::formula& formula) : Obligation(formula) {}
 
-ObligationSet::~ObligationSet() {}
+ObligationSet::~ObligationSet() = default;
 
 void ObligationSet::Calculate()
 {
@@ -105,6 +105,8 @@ spot::formula ObligationSet::Olg(spot::formula formula)
     default:
         break;
     }
+
+    return formula;
 }
 
 spot::formula ObligationSet::OrChildrenFormula(spot::formula formula, std::vector<std::set<spot::formula>>& olgSets)
@@ -119,7 +121,7 @@ spot::formula ObligationSet::OrChildrenFormula(spot::formula formula, std::vecto
         }
     }
 
-    if (olgSet.size())
+    if (!olgSet.empty())
     {
         olgSets.push_back(olgSet);
     }
@@ -166,7 +168,7 @@ std::vector<std::set<spot::formula>> ObligationSet::GetObligationsSet(const spot
     std::vector<std::set<spot::formula>> obligationsSet { obligations.second };
 
     std::vector<std::set<spot::formula>> result;
-    for (auto literal : orSet)
+    for (const auto& literal : orSet)
     {
         for (auto obligation : obligationsSet)
         {
@@ -194,7 +196,7 @@ std::vector<std::set<spot::formula>> ObligationSet::Get() const
 
 void ObligationSet::DisplaySet(const std::vector<std::set<spot::formula>>& obligationsSet)
 {
-    for (auto obligationSet : obligationsSet)
+    for (const auto& obligationSet : obligationsSet)
     {
         std::cout << "{ ";
         for (const auto& literal : obligationSet)

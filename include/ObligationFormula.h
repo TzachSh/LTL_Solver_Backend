@@ -5,15 +5,14 @@
 #include "Obligation.h"
 #include <memory>
 #include <set>
-#include <stdio.h>
 #include <vector>
 
 class ObligationFormula : public Obligation
 {
   public:
-    ObligationFormula(const spot::formula& formula);
-    ~ObligationFormula();
-    virtual void Calculate();
+    explicit ObligationFormula(const spot::formula& formula);
+    ~ObligationFormula() override;
+    void Calculate() override;
 };
 
 #endif

@@ -4,9 +4,7 @@ ObligationFormula::ObligationFormula(const spot::formula& formula) : Obligation(
 {
 }
 
-ObligationFormula::~ObligationFormula()
-{
-}
+ObligationFormula::~ObligationFormula() = default;
 
 void ObligationFormula::Calculate()
 {

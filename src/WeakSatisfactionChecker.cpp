@@ -1,7 +1,7 @@
 #include "WeakSatisfactionChecker.h"
 
-WeakSatisfactionChecker::WeakSatisfactionChecker(/* args */) {}
+WeakSatisfactionChecker::WeakSatisfactionChecker() = default;
 
-WeakSatisfactionChecker::~WeakSatisfactionChecker() {}
+WeakSatisfactionChecker::~WeakSatisfactionChecker() = default;
 
 bool WeakSatisfactionChecker::Check() {return true;}

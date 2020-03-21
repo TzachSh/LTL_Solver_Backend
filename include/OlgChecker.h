@@ -7,14 +7,14 @@
 class OlgChecker
 {
   public:
-    OlgChecker(const ObligationSet& obligationSet);
+    explicit OlgChecker(const ObligationSet& obligationSet);
     ~OlgChecker();
     bool IsConsistent();
 
   private:
     ObligationSet m_obligationSet;
     bool IsNegation(const spot::formula& literal);
-    bool CheckObligation(std::set<spot::formula> obligation);
+    bool CheckObligation(const std::set<spot::formula>& obligation);
 };
 
 #endif

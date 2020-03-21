@@ -1,32 +1,32 @@
 #include "Parser.h"
 
-Parser::Parser() {}
+Parser::Parser() = default;
 
 Parser::Parser(std::vector<std::string> &formulas) : m_formulas{formulas} {}
 
-Parser::~Parser() {}
+Parser::~Parser() = default;
 
 std::vector<spot::formula> Parser::Parse()
 {
     std::vector<spot::formula> paresdFormulas;
-    for (std::string formula : m_formulas)
+    for (const std::string& formula : m_formulas)
     {
-        spot::parsed_formula parsedFormula{spot::parse_infix_psl(formula)};
+        spot::parsed_formula parsedFormula { spot::parse_infix_psl(formula) };
         if (parsedFormula.f)
         {
             // Simplify and transform to NNF
-            spot::formula simplifiedFormula{Simplify(parsedFormula)};
-            spot::formula transformedFormula{EliminateFG(simplifiedFormula)};
+            spot::formula simplifiedFormula { Simplify(parsedFormula) };
+            spot::formula transformedFormula { EliminateFG(simplifiedFormula) };
             paresdFormulas.push_back(transformedFormula);
         }
     }
     return paresdFormulas;
 }
 
-spot::formula Parser::Simplify(spot::parsed_formula parsedFormula)
+spot::formula Parser::Simplify(const spot::parsed_formula& parsedFormula)
 {
     spot::tl_simplifier simplifier;
-    spot::formula simplifiedFormula{simplifier.simplify(parsedFormula.f)};
+    spot::formula simplifiedFormula { simplifier.simplify(parsedFormula.f) };
     return simplifiedFormula;
 }
 

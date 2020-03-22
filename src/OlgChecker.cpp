@@ -37,10 +37,9 @@ bool OlgChecker::CheckObligation(const std::set<spot::formula>& obligation)
         return true;
     case z3::unsat:
     case z3::unknown:
+    default:
         return false;
     }
-
-    return false;
 }
 
 bool OlgChecker::IsConsistent()

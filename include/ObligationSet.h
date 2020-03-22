@@ -15,13 +15,13 @@ class ObligationSet : public Obligation
     ~ObligationSet() override;
     void Calculate() override;
     std::vector<std::set<spot::formula>> Get() const;
+    friend std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet);
 
   private:
     bool IsLeftLiteral(spot::formula& olgLeft, spot::formula& olgRight);
     bool IsRightLiteral(spot::formula& olgLeft, spot::formula& olgRight);
     bool AreBothLiterals(spot::formula& olgLeft, spot::formula& olgRight);
     bool AreBothHaveChildren(spot::formula& olgLeft, spot::formula& olgRight);
-    void DisplaySet(const std::vector<std::set<spot::formula>>& obligationsSet);
 
     std::pair<std::set<spot::formula>, std::vector<std::set<spot::formula>>>
         CalculateObligations(const spot::formula& olgFormula);

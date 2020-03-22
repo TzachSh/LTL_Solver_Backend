@@ -185,8 +185,6 @@ std::vector<std::set<spot::formula>> ObligationSet::GetObligationsSet(const spot
         }
     }
 
-    DisplaySet(result);
-
     return result;
 }
 std::vector<std::set<spot::formula>> ObligationSet::Get() const
@@ -194,15 +192,19 @@ std::vector<std::set<spot::formula>> ObligationSet::Get() const
     return m_obligations;
 }
 
-void ObligationSet::DisplaySet(const std::vector<std::set<spot::formula>>& obligationsSet)
+std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet)
 {
-    for (const auto& obligationSet : obligationsSet)
+    out << "Obligations Set: { ";
+    for (const auto& obligation : obligationSet.Get())
     {
-        std::cout << "{ ";
-        for (const auto& literal : obligationSet)
+        out << "{ ";
+        for (const auto& literal : obligation)
         {
-            std::cout << literal << " ";
+            out << literal << " ";
         }
-        std::cout << "}" << std::endl;
+        out << "} ";
     }
+    out << "}" << std::endl;
+
+    return out;
 }

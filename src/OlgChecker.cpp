@@ -14,7 +14,6 @@ bool OlgChecker::CheckObligation(const std::set<spot::formula>& obligation)
 {
     z3::context context;
     z3::solver solver { context };
-    std::vector<z3::expr> andClause;
 
     for (const auto& literal : obligation)
     {

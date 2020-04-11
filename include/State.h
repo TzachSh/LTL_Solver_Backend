@@ -1,24 +1,23 @@
 #ifndef STATE_H
 #define STATE_H
 
-
 #include "Literal.h"
 #include <set>
+#include <spot/tl/formula.hh>
 #include <vector>
-
-typedef std::vector<std::set<Literal>> TransitionsDataType;
 
 class State
 {
-public:
-	State();
-	State(const Formula& formula, const TransitionsDataType& m_transitions, const std::shared_ptr<State>& nextState);
-	~State();
+  public:
+    State(spot::formula formula);
+    ~State();
+    void AddTransition(const std::pair<spot::formula, State>& transition);
+    spot::formula GetFormula();
+    std::vector<std::pair<spot::formula, State>> GetTransitions();
 
-private:
-	Formula m_formula;
-	std::vector<std::set<Literal>> m_transitions;
-	std::shared_ptr<State> m_nextState;
+  private:
+    spot::formula m_formula;
+    std::vector<std::pair<spot::formula, State>> m_transitions;
 };
 
 #endif

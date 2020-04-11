@@ -100,7 +100,7 @@ void ObligationSet::HandleOrExtraction(std::vector<std::set<spot::formula>>& res
 
 void ObligationSet::Calculate()
 {
-    spot::formula olgFormula { Olg(m_formula) };
+    spot::formula olgFormula { ObligationFormula::OF(m_formula) };
     NotationsStore notationsStore;
 
     olgFormula.traverse(CreateReversePolishNotation, notationsStore);

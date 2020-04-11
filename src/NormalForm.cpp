@@ -15,7 +15,7 @@ void NormalForm::Calculate()
     if (IsEquals(m_formula, m_NFStore[ m_formula ]))
     {
         std::cout << "NF Calculated Successfully !!" << std::endl;
-        ConvertNFToSet(m_NFStore[ m_formula ]);
+        // ConvertNFToSet();
     }
 }
 
@@ -256,17 +256,25 @@ void NormalForm::DisplaySet(const std::pair<spot::formula, spot::formula>& set) 
     std::cout << spot::formula::And({ set.first, set.second }) << std::endl;
 }
 
-void NormalForm::ConvertNFToSet(const spot::formula& NF)
+std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
 {
-    std::set<std::pair<spot::formula, spot::formula>> setsResult;
+    std::cout << m_NFStore[ m_formula ] << std::endl;
+    spot::formula NF { m_NFStore[ m_formula ] };
+    if (NF.is_literal() || NF.is_tt() || NF.is_ff())
+    {
+        return { std::make_pair(NF, spot::formula::X(spot::formula::tt())) };
+    }
 
-    for (auto child : NF)
+    std::set<std::pair<spot::formula, spot::formula>> setsResult;
+    for (auto child : m_NFStore[ m_formula ])
     {
         std::pair<std::set<spot::formula>, std::set<spot::formula>> set;
         child.traverse(TranslateNFToSet, set);
         setsResult.insert(SimplifySet(set));
         DisplaySet(SimplifySet(set));
     }
+
+    return setsResult;
 }
 
 std::vector<spot::formula> NormalForm::SimplifyNextFormulas(const std::set<spot::formula>& nextFormulas)
@@ -353,4 +361,9 @@ void NormalForm::CalculateElementsNF(const std::vector<spot::formula>& elements)
     {
         m_NFStore[ element ] = NF(element);
     }
+}
+
+void NormalForm::Display()
+{
+    std::cout << m_NFStore[ m_formula ] << std::endl;
 }

@@ -2,12 +2,14 @@
 #define OBLIGATIONSET_H
 
 #include "Obligation.h"
+#include "ObligationFormula.h"
 #include <iostream>
 #include <set>
 #include <spot/tl/parse.hh>
 #include <spot/tl/simplify.hh>
 #include <type_traits>
 #include <vector>
+
 class NotationsStore;
 
 class ObligationSet : public Obligation

@@ -1,12 +1,21 @@
 #include "State.h"
+#include <include/NormalForm.h>
 
-State::State() = default;
-
-State::State(const Formula& formula, const TransitionsDataType& transitions, const std::shared_ptr<State>& nextState)
-{
-    m_formula = formula;
-    m_transitions = transitions;
-    m_nextState = nextState;
-}
+State::State(spot::formula formula) : m_formula { std::move(formula) } {}
 
 State::~State() = default;
+
+void State::AddTransition(const std::pair<spot::formula, State>& transition)
+{
+    m_transitions.push_back(transition);
+}
+
+spot::formula State::GetFormula()
+{
+    return m_formula;
+}
+
+std::vector<std::pair<spot::formula, State>> State::GetTransitions()
+{
+    return m_transitions;
+}

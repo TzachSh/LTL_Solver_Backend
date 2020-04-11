@@ -3,6 +3,7 @@
 
 #include "Literal.h"
 #include "Obligation.h"
+#include "ObligationSet.h"
 #include <memory>
 #include <set>
 #include <vector>
@@ -13,6 +14,12 @@ class ObligationFormula : public Obligation
     explicit ObligationFormula(const spot::formula& formula);
     ~ObligationFormula() override;
     void Calculate() override;
+    spot::formula Get();
+    void Display();
+    static spot::formula OF(spot::formula formula);
+
+  private:
+    spot::formula m_OF;
 };
 
 #endif

@@ -18,10 +18,12 @@ class NormalForm
     explicit NormalForm(spot::formula formula);
     ~NormalForm();
     void Calculate();
+    void Display();
+    static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
+    std::set<std::pair<spot::formula, spot::formula>> ConvertNFToSet();
 
   private:
     static spot::formula NF(spot::formula& formula);
-    static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
     static void HandleLiteralInsertion(spot::formula& literal);
     static std::vector<spot::formula> GetNaryResult(std::stack<spot::formula>& result);
     static spot::formula ApplyOperation(spot::formula& formula);
@@ -37,7 +39,6 @@ class NormalForm
     static spot::formula ApplyAnd(spot::formula& formula);
     static spot::formula ApplyU(spot::formula& formula);
     static spot::formula ApplyR(spot::formula& formula);
-    static std::vector<std::vector<spot::formula>> ConvertFormulaToSets(std::stack<spot::formula>& formulas);
     static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
     static bool IsNFStored(const spot::formula& formula);
 
@@ -50,7 +51,6 @@ class NormalForm
     std::pair<spot::formula, spot::formula>
         SimplifySet(std::pair<std::set<spot::formula>, std::set<spot::formula>>& set);
 
-    void ConvertNFToSet(const spot::formula& NF);
     void DisplaySet(const std::pair<spot::formula, spot::formula>& set) const;
     void CalculateElementsNF(const std::vector<spot::formula>& elements);
 

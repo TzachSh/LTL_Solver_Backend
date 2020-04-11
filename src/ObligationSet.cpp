@@ -39,7 +39,7 @@ std::vector<std::set<spot::formula>> ObligationSet::CalculateSets(const Notation
         }
         else
         {
-            HandleOperation(result, elementsSet, element);
+            HandleOperation(result, elementsSet, element.get());
             elementsSet.clear();
         }
     }

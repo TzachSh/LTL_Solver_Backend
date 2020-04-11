@@ -24,7 +24,7 @@ class NormalForm
     static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
     static void HandleLiteralInsertion(spot::formula& literal);
     static std::vector<spot::formula> GetNaryResult(std::stack<spot::formula>& result);
-    static spot::formula ApplyChildOperation(spot::formula& formula);
+    static spot::formula ApplyOperation(spot::formula& formula);
     static std::vector<std::vector<spot::formula>> ConvertFormulaToSets(spot::formula& formula);
     static std::vector<spot::formula> PerformeAndOnSets(std::vector<std::vector<spot::formula>>& andResultHelper);
     static spot::formula GetUntilXFormula(const spot::formula& leftFormula, const spot::formula& rightFormula);

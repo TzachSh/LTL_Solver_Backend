@@ -27,7 +27,7 @@ spot::formula NormalForm::NF(spot::formula& formula)
     }
     else
     {
-        spot::formula resultNF { ApplyChildOperation(formula) };
+        spot::formula resultNF { ApplyOperation(formula) };
         if (!IsNFStored(formula))
         {
             m_NFStore[ formula ] = resultNF;
@@ -41,7 +41,7 @@ spot::formula NormalForm::NF(spot::formula& formula)
     return m_NFStore[ formula ];
 }
 
-spot::formula NormalForm::ApplyChildOperation(spot::formula& formula)
+spot::formula NormalForm::ApplyOperation(spot::formula& formula)
 {
     switch (formula.kind())
     {
@@ -55,6 +55,8 @@ spot::formula NormalForm::ApplyChildOperation(spot::formula& formula)
         return ApplyU(formula);
     case spot::op::R:
         return ApplyR(formula);
+    default:
+        throw std::runtime_error("Not Implemented");
     }
 }
 

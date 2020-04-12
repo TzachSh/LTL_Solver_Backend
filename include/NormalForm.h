@@ -20,6 +20,7 @@ class NormalForm
     void Calculate();
     void Display();
     static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
+    static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
     std::set<std::pair<spot::formula, spot::formula>> ConvertNFToSet();
 
   private:
@@ -39,7 +40,6 @@ class NormalForm
     static spot::formula ApplyAnd(spot::formula& formula);
     static spot::formula ApplyU(spot::formula& formula);
     static spot::formula ApplyR(spot::formula& formula);
-    static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
     static bool IsNFStored(const spot::formula& formula);
 
     static bool TranslateNFToSet(spot::formula& NF,

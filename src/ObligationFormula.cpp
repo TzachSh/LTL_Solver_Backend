@@ -29,7 +29,7 @@ spot::formula ObligationFormula::OF(spot::formula formula)
     }
 }
 
-spot::formula ObligationFormula::Get()
+spot::formula& ObligationFormula::Get()
 {
     return m_OF;
 }
@@ -38,3 +38,11 @@ void ObligationFormula::Display()
 {
     std::cout << m_OF << std::endl;
 }
+
+/*
+spot::formula TraverseOF(spot::formula f)
+{
+    std::cout << f << std::endl;
+
+    return f.map(TraverseOF);
+}*/

@@ -45,8 +45,6 @@ int main(int argc, char** argv)
         else
         {
             std::cout << formulas[ formulaIndex ] << " Satisfiability is still unknown!" << std::endl;
-            // NormalForm normalForm { formula };
-            // normalForm.Calculate();
         }
 
         formulaIndex++;

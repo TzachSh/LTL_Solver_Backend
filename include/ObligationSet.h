@@ -1,6 +1,7 @@
 #ifndef OBLIGATIONSET_H
 #define OBLIGATIONSET_H
 
+#include "Notations.h"
 #include "Obligation.h"
 #include "ObligationFormula.h"
 #include <iostream>
@@ -35,72 +36,6 @@ class ObligationSet : public Obligation
     bool IsLiteralNotation(const NotationsStore* element);
     spot::formula ConvertToFormula(NotationsStore* element);
     spot::op ConvertToOperator(NotationsStore* element);
-};
-
-class NotationsStore
-{
-  public:
-    virtual ~NotationsStore()
-    {
-        for (auto& notation : m_notations)
-        {
-            delete notation;
-        }
-    }
-    virtual void Display() const
-    {
-        for (const auto& element : m_notations)
-        {
-            element->Display();
-        }
-    };
-    void AddElement(NotationsStore* element)
-    {
-        m_notations.insert(m_notations.begin(), element);
-    }
-    std::vector<NotationsStore*> GetElements() const
-    {
-        return m_notations;
-    }
-
-    template <typename Base, typename T> static bool InstanceOf(const T* ptr)
-    {
-        return dynamic_cast<const Base*>(ptr) != nullptr;
-    }
-
-    template <typename S, typename T> static T Convert(NotationsStore* element)
-    {
-        return dynamic_cast<S*>(element)->Get();
-    }
-
-  private:
-    std::vector<NotationsStore*> m_notations;
-};
-
-class NotationFormula : public NotationsStore
-{
-  public:
-    explicit NotationFormula(spot::formula& formula) : m_formula { formula } {}
-    spot::formula Get() const
-    {
-        return m_formula;
-    };
-
-  private:
-    spot::formula m_formula;
-};
-
-class NotationOp : public NotationsStore
-{
-  public:
-    explicit NotationOp(const spot::op& op) : m_operator { op } {};
-    spot::op Get() const
-    {
-        return m_operator;
-    };
-
-  private:
-    spot::op m_operator;
 };
 
 #endif

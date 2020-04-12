@@ -8,7 +8,7 @@ Parser::~Parser() = default;
 
 std::vector<spot::formula> Parser::Parse()
 {
-    std::vector<spot::formula> paresdFormulas;
+    std::vector<spot::formula> parsedFormulas;
     for (const std::string& formula : m_formulas)
     {
         spot::parsed_formula parsedFormula { spot::parse_infix_psl(formula) };
@@ -17,10 +17,15 @@ std::vector<spot::formula> Parser::Parse()
             // Simplify and transform to NNF
             spot::formula simplifiedFormula { Simplify(parsedFormula) };
             spot::formula transformedFormula { EliminateFG(simplifiedFormula) };
-            paresdFormulas.push_back(transformedFormula);
+            std::cout << transformedFormula << std::endl;
+            parsedFormulas.push_back(transformedFormula);
+        }
+        else
+        {
+            throw std::runtime_error("Parse failed");
         }
     }
-    return paresdFormulas;
+    return parsedFormulas;
 }
 
 spot::formula Parser::Simplify(const spot::parsed_formula& parsedFormula)

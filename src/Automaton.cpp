@@ -1,6 +1,7 @@
 #include "Automaton.h"
+#include <include/WeakSatisfactionChecker.h>
 
-Automaton::Automaton(spot::formula formula) : m_initialFormula { std::move(formula) }
+Automaton::Automaton(const spot::formula& formula) : m_initialFormula { formula }, m_isSatisfiable { false }
 {
     std::queue<spot::formula> statesQueue;
     statesQueue.push(m_initialFormula);
@@ -17,7 +18,19 @@ Automaton::Automaton(spot::formula formula) : m_initialFormula { std::move(formu
         for (auto const& transition : NF.ConvertNFToSet())
         {
             spot::formula nextState { GetFormula(transition) };
-            if (!(NormalForm::IsEquals(state.GetFormula(), nextState)))
+            if (NormalForm::IsEquals(state.GetFormula(), nextState)) // Found an SCC
+            {
+                spot::formula transitionCondition { transition.first };
+                ObligationFormula of { state.GetFormula() };
+                of.Calculate();
+
+                WeakSatisfactionChecker wsChecker { transitionCondition, of.Get() };
+                if (wsChecker.Check())
+                {
+                    m_isSatisfiable = true;
+                }
+            }
+            else
             {
                 statesQueue.push(nextState);
             }
@@ -28,6 +41,7 @@ Automaton::Automaton(spot::formula formula) : m_initialFormula { std::move(formu
         m_states.push_back(state);
     }
 
+    m_isSatisfiable = false;
     Display();
 }
 

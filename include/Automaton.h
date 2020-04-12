@@ -10,7 +10,7 @@
 class Automaton
 {
   public:
-    Automaton(spot::formula formula);
+    Automaton(const spot::formula& formula);
     ~Automaton();
     void Display();
 
@@ -18,6 +18,7 @@ class Automaton
     spot::formula GetFormula(const std::pair<spot::formula, spot::formula>& transition);
     spot::formula m_initialFormula;
     std::vector<State> m_states;
+    bool m_isSatisfiable;
 };
 
 #endif

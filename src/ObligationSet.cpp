@@ -4,38 +4,16 @@ ObligationSet::ObligationSet(const spot::formula& formula) : Obligation(formula)
 
 ObligationSet::~ObligationSet() = default;
 
-bool ObligationSet::CreateReversePolishNotation(spot::formula& formula, NotationsStore& notationsStore)
-{
-    if (formula.is_literal())
-    {
-        notationsStore.AddElement(new NotationFormula(formula));
-    }
-    else
-    {
-        notationsStore.AddElement(new NotationOp(formula.kind()));
-    }
-    return formula.is_literal();
-}
-
-spot::formula ObligationSet::ConvertToFormula(NotationsStore* element)
-{
-    return NotationsStore::Convert<NotationFormula, spot::formula>(element);
-}
-
-spot::op ObligationSet::ConvertToOperator(NotationsStore* element)
-{
-    return NotationsStore::Convert<NotationOp, spot::op>(element);
-}
-
 std::vector<std::set<spot::formula>> ObligationSet::CalculateSets(const NotationsStore& notationsStore)
 {
     std::vector<std::set<spot::formula>> result;
+
     std::set<spot::formula> elementsSet;
     for (auto& element : notationsStore.GetElements())
     {
-        if (IsLiteralNotation(element))
+        if (IsLiteralNotation(element.get()))
         {
-            elementsSet.insert(ConvertToFormula(element));
+            elementsSet.insert(NotationsStore::ConvertToFormula(element.get()));
         }
         else
         {
@@ -49,7 +27,7 @@ std::vector<std::set<spot::formula>> ObligationSet::CalculateSets(const Notation
 void ObligationSet::HandleOperation(std::vector<std::set<spot::formula>>& result,
                                     const std::set<spot::formula>& elementsSet, NotationsStore* const& element)
 {
-    switch (ConvertToOperator(element))
+    switch (NotationsStore::ConvertToOperator(element))
     {
     case spot::op::Or:
     {
@@ -84,10 +62,13 @@ void ObligationSet::HandleAndExtraction(std::vector<std::set<spot::formula>>& re
 void ObligationSet::InitializeSet(std::vector<std::set<spot::formula>>& result,
                                   const std::set<spot::formula>& elementsSet)
 {
+    std::set<spot::formula> initSet;
     for (const auto& literal : elementsSet)
     {
-        result.push_back({ literal });
+        initSet.insert(literal);
     }
+
+    result.push_back(initSet);
 }
 void ObligationSet::HandleOrExtraction(std::vector<std::set<spot::formula>>& result,
                                        const std::set<spot::formula>& elementsSet)
@@ -103,7 +84,7 @@ void ObligationSet::Calculate()
     spot::formula olgFormula { ObligationFormula::OF(m_formula) };
     NotationsStore notationsStore;
 
-    olgFormula.traverse(CreateReversePolishNotation, notationsStore);
+    olgFormula.traverse(NotationsStore::CreateReversePolishNotation, notationsStore);
     m_obligations = CalculateSets(notationsStore);
 }
 

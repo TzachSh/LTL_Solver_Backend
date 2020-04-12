@@ -12,10 +12,10 @@ void NormalForm::Calculate()
     m_formula.map(GetElementsByOrder, elements);
 
     CalculateElementsNF(elements);
+
     if (IsEquals(m_formula, m_NFStore[ m_formula ]))
     {
         std::cout << "NF Calculated Successfully !!" << std::endl;
-        // ConvertNFToSet();
     }
 }
 
@@ -32,10 +32,6 @@ spot::formula NormalForm::NF(spot::formula& formula)
         {
             m_NFStore[ formula ] = resultNF;
         }
-    }
-    if (IsEquals(formula, m_NFStore[ formula ]))
-    {
-        std::cout << "NF child calculated successfully" << std::endl;
     }
 
     return m_NFStore[ formula ];
@@ -56,7 +52,7 @@ spot::formula NormalForm::ApplyOperation(spot::formula& formula)
     case spot::op::R:
         return ApplyR(formula);
     default:
-        throw std::runtime_error("Not Implemented");
+        return formula;
     }
 }
 
@@ -113,7 +109,7 @@ spot::formula NormalForm::CalculateRLeftFormula(const spot::formula& leftNF, con
 
 spot::formula NormalForm::ApplyRAnd(spot::formula& rightNF, const spot::formula& next)
 {
-    if (rightNF.is_literal() || rightNF.is_tt() || rightNF.is_ff() || rightNF.kind() != spot::op::Or)
+    if (rightNF.kind() != spot::op::Or)
     {
         return spot::formula::And({ rightNF, next });
     }
@@ -142,7 +138,7 @@ spot::formula NormalForm::ApplyU(spot::formula& formula)
 
 spot::formula NormalForm::ApplyUAnd(spot::formula& leftNF, const spot::formula& next)
 {
-    if (leftNF.is_literal() || leftNF.is_tt() || leftNF.is_ff() || leftNF.kind() != spot::op::Or)
+    if (leftNF.kind() != spot::op::Or)
     {
         return spot::formula::And({ leftNF, next });
     }
@@ -164,7 +160,9 @@ spot::formula NormalForm::ApplyAnd(spot::formula& formula)
 {
     std::vector<std::vector<spot::formula>> formulasSets { ConvertFormulaToSets(formula) };
     std::vector<spot::formula> andResult { PerformeAndOnSets(formulasSets) };
-    return Parser::Simplify(spot::formula::Or(andResult));
+    spot::formula simplified { Parser::Simplify(spot::formula::Or(andResult)) };
+
+    return simplified.is_ff() ? spot::formula::Or(andResult) : simplified;
 }
 
 std::vector<spot::formula> NormalForm::PerformeAndBetweenTwoSets(const std::vector<spot::formula>& setA,
@@ -188,7 +186,7 @@ std::vector<spot::formula> NormalForm::PerformeAndOnSets(std::vector<std::vector
     std::vector<spot::formula> andResultSet { PerformeAndBetweenTwoSets(
         andResultHelper[ static_cast<int>(Child::LEFT) ], andResultHelper[ static_cast<int>(Child::RIGHT) ]) };
 
-    const std::size_t NEXT_CHILD_INDEX = 2;
+    const int NEXT_CHILD_INDEX = 2;
     for (int i = NEXT_CHILD_INDEX; i < andResultHelper.size(); i++)
     {
         andResultSet = PerformeAndBetweenTwoSets(andResultSet, andResultHelper[ i ]);
@@ -205,7 +203,7 @@ std::vector<std::vector<spot::formula>> NormalForm::ConvertFormulaToSets(spot::f
     {
         std::vector<spot::formula> andSet;
         spot::formula NF { m_NFStore[ child ] };
-        if (NF.is_literal() || NF.is_tt() || NF.is_ff() || NF.kind() == spot::op::X)
+        if (NF.kind() != spot::op::Or) // The NF consists of only one element
         {
             andSet.push_back(NF);
         }
@@ -258,7 +256,6 @@ void NormalForm::DisplaySet(const std::pair<spot::formula, spot::formula>& set) 
 
 std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
 {
-    std::cout << m_NFStore[ m_formula ] << std::endl;
     spot::formula NF { m_NFStore[ m_formula ] };
     if (NF.is_literal() || NF.is_tt() || NF.is_ff())
     {
@@ -270,8 +267,12 @@ std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
     {
         std::pair<std::set<spot::formula>, std::set<spot::formula>> set;
         child.traverse(TranslateNFToSet, set);
-        setsResult.insert(SimplifySet(set));
-        DisplaySet(SimplifySet(set));
+        const auto simplifiedSet { SimplifySet(set) };
+        if (!IsEquals(simplifiedSet.first, spot::formula::ff()))
+        {
+            setsResult.insert(simplifiedSet);
+            DisplaySet(SimplifySet(set));
+        }
     }
 
     return setsResult;
@@ -334,8 +335,9 @@ spot::formula NormalForm::SimplifyNexts(const std::set<spot::formula>& nextFormu
 {
     std::vector<spot::formula> simplifiedFormulas { SimplifyNextFormulas(nextFormulas) };
     spot::formula andApplied { ApplyAndNextFormulas(simplifiedFormulas) };
+    spot::formula andSimplified { Parser::Simplify(andApplied) };
 
-    return spot::formula::X(Parser::Simplify(andApplied));
+    return andSimplified.is_ff() ? spot::formula::X(andApplied) : spot::formula::X(andSimplified);
 }
 
 bool NormalForm::TranslateNFToSet(spot::formula& NF,

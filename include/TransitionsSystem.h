@@ -7,12 +7,14 @@
 #include <spot/tl/formula.hh>
 #include <vector>
 
-class Automaton
+class TransitionsSystem
 {
   public:
-    Automaton(const spot::formula& formula);
-    ~Automaton();
+    TransitionsSystem(const spot::formula& formula);
+    ~TransitionsSystem();
     void Display();
+    void Build();
+    bool IsSatisfiable();
 
   private:
     spot::formula GetFormula(const std::pair<spot::formula, spot::formula>& transition);

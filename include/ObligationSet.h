@@ -25,7 +25,6 @@ class ObligationSet : public Obligation
   private:
     std::vector<std::set<spot::formula>> CalculateSets(const NotationsStore& notationsStore);
     static spot::formula Olg(spot::formula formula);
-    static bool CreateReversePolishNotation(spot::formula& formula, NotationsStore& notationsStore);
 
     std::vector<std::set<spot::formula>> m_obligations;
     void HandleOrExtraction(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
@@ -34,8 +33,6 @@ class ObligationSet : public Obligation
     void HandleOperation(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet,
                          NotationsStore* const& element);
     bool IsLiteralNotation(const NotationsStore* element);
-    spot::formula ConvertToFormula(NotationsStore* element);
-    spot::op ConvertToOperator(NotationsStore* element);
 };
 
 #endif

@@ -1,8 +1,9 @@
 #include "ObligationSet.h"
 #include "OlgChecker.h"
 #include "Parser.h"
-#include <include/Automaton.h>
 #include <include/NormalForm.h>
+#include <include/TransitionsSystem.h>
+#include <include/WeakSatisfactionChecker.h>
 #include <iostream>
 #include <spot/tl/parse.hh>
 #include <string>
@@ -45,6 +46,16 @@ int main(int argc, char** argv)
         else
         {
             std::cout << formulas[ formulaIndex ] << " Satisfiability is still unknown!" << std::endl;
+            TransitionsSystem transitionsSystem { formula };
+            transitionsSystem.Build();
+            if (transitionsSystem.IsSatisfiable())
+            {
+                std::cout << formulas[ formulaIndex ] << " is Satisfiable!" << std::endl;
+            }
+            else
+            {
+                std::cout << formulas[ formulaIndex ] << " is not Satisfiable!" << std::endl;
+            }
         }
 
         formulaIndex++;

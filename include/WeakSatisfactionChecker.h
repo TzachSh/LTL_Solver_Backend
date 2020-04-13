@@ -1,8 +1,8 @@
 #ifndef WEAKSATISFACTIONCHECKER_H
 #define WEAKSATISFACTIONCHECKER_H
 
-#include "Automaton.h"
 #include "ObligationFormula.h"
+#include "TransitionsSystem.h"
 
 class WeakSatisfactionChecker
 {

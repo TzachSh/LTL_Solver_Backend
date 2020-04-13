@@ -1,7 +1,15 @@
-#include "Automaton.h"
+#include "TransitionsSystem.h"
 #include <include/WeakSatisfactionChecker.h>
 
-Automaton::Automaton(const spot::formula& formula) : m_initialFormula { formula }, m_isSatisfiable { false }
+TransitionsSystem::TransitionsSystem(const spot::formula& formula)
+    : m_initialFormula { formula },
+      m_isSatisfiable { false }
+{
+}
+
+TransitionsSystem::~TransitionsSystem() = default;
+
+void TransitionsSystem::Build()
 {
     std::queue<spot::formula> statesQueue;
     statesQueue.push(m_initialFormula);
@@ -42,12 +50,9 @@ Automaton::Automaton(const spot::formula& formula) : m_initialFormula { formula 
     }
 
     m_isSatisfiable = false;
-    Display();
 }
 
-Automaton::~Automaton() = default;
-
-spot::formula Automaton::GetFormula(const std::pair<spot::formula, spot::formula>& transition)
+spot::formula TransitionsSystem::GetFormula(const std::pair<spot::formula, spot::formula>& transition)
 {
     spot::formula transitionFormula { transition.second };
     if (transitionFormula.is_tt() || transitionFormula.is_ff())
@@ -60,7 +65,12 @@ spot::formula Automaton::GetFormula(const std::pair<spot::formula, spot::formula
     }
 }
 
-void Automaton::Display()
+bool TransitionsSystem::IsSatisfiable()
+{
+    return m_isSatisfiable;
+}
+
+void TransitionsSystem::Display()
 {
     std::cout << std::endl;
     std::cout << "States: " << m_states.size() << std::endl;

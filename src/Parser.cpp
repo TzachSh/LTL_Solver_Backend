@@ -15,7 +15,11 @@ std::vector<spot::formula> Parser::Parse()
         if (parsedFormula.f)
         {
             // Simplify and transform to NNF
-            spot::formula simplifiedFormula { Simplify(parsedFormula) };
+            spot::formula simplifiedFormula { Simplify(parsedFormula.f) };
+            if (simplifiedFormula.is_ff())
+            {
+                simplifiedFormula = parsedFormula.f;
+            }
             spot::formula transformedFormula { EliminateFG(simplifiedFormula) };
             std::cout << transformedFormula << std::endl;
             parsedFormulas.push_back(transformedFormula);
@@ -28,10 +32,10 @@ std::vector<spot::formula> Parser::Parse()
     return parsedFormulas;
 }
 
-spot::formula Parser::Simplify(const spot::parsed_formula& parsedFormula)
+spot::formula Parser::Simplify(const spot::formula& formula)
 {
     spot::tl_simplifier simplifier;
-    spot::formula simplifiedFormula { simplifier.simplify(parsedFormula.f) };
+    spot::formula simplifiedFormula { simplifier.simplify(formula) };
     return simplifiedFormula;
 }
 

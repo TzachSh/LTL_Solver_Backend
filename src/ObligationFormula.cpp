@@ -1,4 +1,5 @@
 #include "ObligationFormula.h"
+#include <include/Constants.h>
 
 ObligationFormula::ObligationFormula(const spot::formula& formula) : Obligation(formula) {}
 

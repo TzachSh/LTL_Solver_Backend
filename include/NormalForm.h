@@ -1,7 +1,6 @@
 #ifndef NORMALFORM_H
 #define NORMALFORM_H
 
-#include "Literal.h"
 #include "Notations.h"
 #include "Parser.h"
 #include <iostream>
@@ -17,7 +16,7 @@ class NormalForm
   public:
     explicit NormalForm(spot::formula formula);
     ~NormalForm();
-    void Calculate();
+    void Calculate(crow::websocket::connection& conn);
     void Display();
     static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
     static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
@@ -51,7 +50,7 @@ class NormalForm
     std::pair<spot::formula, spot::formula>
         SimplifySet(std::pair<std::set<spot::formula>, std::set<spot::formula>>& set);
 
-    void DisplaySet(const std::pair<spot::formula, spot::formula>& set) const;
+    void DisplaySet(const std::pair<spot::formula, spot::formula>& set, crow::websocket::connection& conn) const;
     void CalculateElementsNF(const std::vector<spot::formula>& elements);
 
     std::vector<spot::formula> SimplifyNextFormulas(const std::set<spot::formula>& nextFormulas);

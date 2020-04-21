@@ -1,7 +1,6 @@
 #ifndef OBLIGATIONFORMULA_H
 #define OBLIGATIONFORMULA_H
 
-#include "Literal.h"
 #include "Obligation.h"
 #include "ObligationSet.h"
 #include <memory>

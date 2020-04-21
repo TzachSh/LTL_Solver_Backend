@@ -18,28 +18,22 @@ add_executable(C___Project
         include/Automaton.h
         include/OlgChecker.h
         include/Constants.h
-        include/Formula.h
-        include/Literal.h
         include/NormalForm.h
         include/Obligation.h
         include/ObligationFormula.h
         include/ObligationSet.h
-        include/Operator.h
         include/Parser.h
-        include/Solver.h
         include/State.h
         include/WeakSatisfactionChecker.h
         src/Automaton.cpp
         src/OlgChecker.cpp
-        src/Formula.cpp
-        src/Literal.cpp
         src/main.cpp
         src/NormalForm.cpp
         src/Obligation.cpp
         src/ObligationFormula.cpp
         src/ObligationSet.cpp
-        src/Operator.cpp
         src/Parser.cpp
-        src/Solver.cpp
         src/State.cpp
-        src/WeakSatisfactionChecker.cpp)
+        src/WeakSatisfactionChecker.cpp
+        src/Notations.cpp
+        src/TransitionsSystem.cpp src/ServerHandler.cpp include/ServerHandler.h)

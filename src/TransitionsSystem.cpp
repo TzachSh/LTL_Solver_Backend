@@ -9,7 +9,7 @@ TransitionsSystem::TransitionsSystem(const spot::formula& formula)
 
 TransitionsSystem::~TransitionsSystem() = default;
 
-void TransitionsSystem::Build()
+void TransitionsSystem::Build(crow::websocket::connection& conn)
 {
     std::queue<spot::formula> statesQueue;
     statesQueue.push(m_initialFormula);
@@ -32,7 +32,7 @@ void TransitionsSystem::Build()
                 ObligationFormula of { state.GetFormula() };
                 of.Calculate();
 
-                WeakSatisfactionChecker wsChecker { transitionCondition, of.Get() };
+                WeakSatisfactionChecker wsChecker { transitionCondition, of.Get(), conn };
                 if (wsChecker.Check())
                 {
                     m_isSatisfiable = true;

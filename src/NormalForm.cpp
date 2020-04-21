@@ -6,7 +6,7 @@ NormalForm::NormalForm(spot::formula formula) : m_formula { std::move(formula) }
 
 NormalForm::~NormalForm() = default;
 
-void NormalForm::Calculate()
+void NormalForm::Calculate(crow::websocket::connection& conn)
 {
     std::vector<spot::formula> elements { m_formula };
     m_formula.map(GetElementsByOrder, elements);
@@ -249,9 +249,9 @@ bool NormalForm::IsNFStored(const spot::formula& formula)
     return m_NFStore.find(formula) != m_NFStore.end();
 }
 
-void NormalForm::DisplaySet(const std::pair<spot::formula, spot::formula>& set) const
+void NormalForm::DisplaySet(const std::pair<spot::formula, spot::formula>& set, crow::websocket::connection& conn) const
 {
-    std::cout << spot::formula::And({ set.first, set.second }) << std::endl;
+    conn.send_text(spot::str_psl(spot::formula::And({ set.first, set.second })));
 }
 
 std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
@@ -271,7 +271,7 @@ std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
         if (!IsEquals(simplifiedSet.first, spot::formula::ff()))
         {
             setsResult.insert(simplifiedSet);
-            DisplaySet(SimplifySet(set));
+            DisplaySet(SimplifySet(set), conn);
         }
     }
 

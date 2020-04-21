@@ -1,6 +1,8 @@
 #include "WeakSatisfactionChecker.h"
 
-WeakSatisfactionChecker::WeakSatisfactionChecker(spot::formula& condition, const spot::formula& of) : m_of { of }
+WeakSatisfactionChecker::WeakSatisfactionChecker(spot::formula& condition, const spot::formula& of,
+                                                 crow::websocket::connection& conn)
+    : m_of { of }
 {
     std::cout << "Condition: " << condition << std::endl;
     std::cout << "Obligation Formula: " << of << std::endl;
@@ -9,6 +11,25 @@ WeakSatisfactionChecker::WeakSatisfactionChecker(spot::formula& condition, const
 }
 
 WeakSatisfactionChecker::~WeakSatisfactionChecker() = default;
+
+std::string WeakSatisfactionChecker::DisplayConditionAsSet(const spot::formula& condition)
+{
+    std::ostringstream stringStream;
+    if (condition.kind() != spot::op::And)
+    {
+        stringStream << "{ " << condition << " }";
+        return stringStream.str();
+    }
+
+    stringStream << "{ ";
+    for (const auto& child : condition)
+    {
+        stringStream << child << " ";
+    }
+    stringStream << "}";
+
+    return stringStream.str();
+}
 
 bool WeakSatisfactionChecker::Check()
 {

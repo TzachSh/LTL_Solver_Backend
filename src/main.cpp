@@ -1,63 +1,31 @@
-#include "ObligationSet.h"
-#include "OlgChecker.h"
-#include "Parser.h"
-#include <include/NormalForm.h>
-#include <include/TransitionsSystem.h>
-#include <include/WeakSatisfactionChecker.h>
-#include <iostream>
-#include <spot/tl/parse.hh>
-#include <string>
-#include <vector>
+#include "Constants.h"
+#include "ServerHandler.h"
+#include "crow_all.h"
 
 int main(int argc, char** argv)
 {
-    std::vector<std::string> formulas;
-    // formulas.push_back("G( (a U b) & d U (e | c) & (!e | y) )");
-    // formulas.push_back("G( (a U b) & X( a ) & (d U (e | c & (d | f))) | ( y R ( j | k | n )) )");
-    // formulas.push_back("G( a U (c & b) & f R (j & (k | c))");
-    formulas.push_back("G(a U b & (c U (e | d))");
+    crow::SimpleApp app;
+    ServerHandler serverHandler;
 
-    Parser parser(formulas);
-    std::vector<spot::formula> parsedFormulas { parser.Parse() };
+    CROW_ROUTE(app, "/ws")
+        .websocket()
+        .onopen([&](crow::websocket::connection& conn) {
+          serverHandler.HandleWSOnOpen(conn);
+        })
+        .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
+          serverHandler.HandleWSOnClose(conn, reason);
+        })
+        .onmessage([&](crow::websocket::connection& conn, const std::string& data, bool is_binary) {
+            serverHandler.HandleWSOnMessage(conn, data);
+        });
 
-    std::size_t formulaIndex = 0;
-    for (spot::formula& formula : parsedFormulas)
-    {
-        if (formula.is_ff())
-        {
-            std::cout << formulas[ formulaIndex ] << " is equivalent to false" << std::endl;
-            std::cout << formulas[ formulaIndex ] << " satisfiability currently unknown!" << std::endl;
-            formulaIndex++;
-            continue;
-        }
+    CROW_ROUTE(app, "/experiments").methods("OPTIONS"_method, "GET"_method)([&]() {
+        return serverHandler.HandleFetchExperimentsData();
+    });
 
-        std::cout << "Calculating obligations set of: " << formulas[ formulaIndex ] << std::endl;
-        ObligationSet obligationSet { formula };
-        obligationSet.Calculate();
-        std::cout << obligationSet << std::endl;
+    CROW_ROUTE(app, "/reset").methods("OPTIONS"_method, "GET"_method)([&] {
+        return serverHandler.HandleResetExperiments();
+    });
 
-        NormalForm normalForm { formula };
-
-        OlgChecker olgChecker { obligationSet };
-        if (olgChecker.IsConsistent())
-        {
-            std::cout << formulas[ formulaIndex ] << " is Satisfiable!" << std::endl;
-        }
-        else
-        {
-            std::cout << formulas[ formulaIndex ] << " Satisfiability is still unknown!" << std::endl;
-            TransitionsSystem transitionsSystem { formula };
-            transitionsSystem.Build();
-            if (transitionsSystem.IsSatisfiable())
-            {
-                std::cout << formulas[ formulaIndex ] << " is Satisfiable!" << std::endl;
-            }
-            else
-            {
-                std::cout << formulas[ formulaIndex ] << " is not Satisfiable!" << std::endl;
-            }
-        }
-
-        formulaIndex++;
-    }
+    app.port(PORT).multithreaded().run();
 }

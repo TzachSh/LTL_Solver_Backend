@@ -1,7 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "Literal.h"
 #include <set>
 #include <spot/tl/formula.hh>
 #include <vector>

@@ -41,7 +41,7 @@ bool OlgChecker::CheckObligation(const std::set<spot::formula>& obligation)
     }
 }
 
-bool OlgChecker::IsConsistent()
+bool OlgChecker::IsConsistent(crow::websocket::connection& conn)
 {
     for (const auto& obligation : m_obligationSet.Get())
     {

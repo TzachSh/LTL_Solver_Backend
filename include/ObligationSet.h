@@ -4,6 +4,7 @@
 #include "Notations.h"
 #include "Obligation.h"
 #include "ObligationFormula.h"
+#include "crow_all.h"
 #include <iostream>
 #include <set>
 #include <spot/tl/parse.hh>
@@ -19,14 +20,14 @@ class ObligationSet : public Obligation
     explicit ObligationSet(const spot::formula& formula);
     ~ObligationSet() override;
     void Calculate() override;
+    const std::string str();
     std::vector<std::set<spot::formula>> Get() const;
     friend std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet);
 
   private:
-    std::vector<std::set<spot::formula>> CalculateSets(const NotationsStore& notationsStore);
     static spot::formula Olg(spot::formula formula);
 
-    std::vector<std::set<spot::formula>> m_obligations;
+    std::vector<std::set<spot::formula>> CalculateSets(const NotationsStore& notationsStore);
     void HandleOrExtraction(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
     void InitializeSet(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
     void HandleAndExtraction(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);

@@ -13,7 +13,7 @@ class TransitionsSystem
     TransitionsSystem(const spot::formula& formula);
     ~TransitionsSystem();
     void Display();
-    void Build();
+    void Build(crow::websocket::connection& conn);
     bool IsSatisfiable();
 
   private:

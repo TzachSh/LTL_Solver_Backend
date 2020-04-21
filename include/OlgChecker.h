@@ -9,7 +9,7 @@ class OlgChecker
   public:
     explicit OlgChecker(const ObligationSet& obligationSet);
     ~OlgChecker();
-    bool IsConsistent();
+    bool IsConsistent(crow::websocket::connection& conn);
 
   private:
     ObligationSet m_obligationSet;

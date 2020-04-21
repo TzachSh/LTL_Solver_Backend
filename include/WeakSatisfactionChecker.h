@@ -7,7 +7,7 @@
 class WeakSatisfactionChecker
 {
   public:
-    WeakSatisfactionChecker(spot::formula& condition, const spot::formula& of);
+    WeakSatisfactionChecker(spot::formula& condition, const spot::formula& of, crow::websocket::connection& conn);
     ~WeakSatisfactionChecker();
     bool Check();
 
@@ -24,6 +24,7 @@ class WeakSatisfactionChecker
     std::map<spot::formula, spot::formula> m_satisfactionInfo;
     std::vector<spot::formula> m_conditionLiterals;
     spot::formula m_of;
+    std::string DisplayConditionAsSet(const spot::formula& condition);
 };
 
 #endif

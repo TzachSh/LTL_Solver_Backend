@@ -1,7 +1,6 @@
 #ifndef OBLIGATION_H
 #define OBLIGATION_H
 
-#include "Literal.h"
 #include <memory>
 #include <set>
 #include <spot/tl/formula.hh>

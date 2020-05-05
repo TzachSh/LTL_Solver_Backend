@@ -14,11 +14,12 @@ class Parser
     Parser();
     explicit Parser(std::vector<std::string>& formulas);
     static spot::formula Simplify(const spot::formula& formula);
+    static spot::formula EliminateFG(spot::formula formula);
     std::vector<spot::formula> Parse();
+    spot::formula ParseFormula(const std::string& formula);
     ~Parser();
 
   private:
-    static spot::formula EliminateFG(spot::formula formula);
     std::vector<std::string> m_formulas;
 };
 

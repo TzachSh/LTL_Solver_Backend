@@ -1,5 +1,4 @@
 #include "ObligationSet.h"
-#include <include/Constants.h>
 
 ObligationSet::ObligationSet(const spot::formula& formula) : Obligation(formula) {}
 
@@ -12,9 +11,17 @@ std::vector<std::set<spot::formula>> ObligationSet::CalculateSets(const Notation
     std::set<spot::formula> elementsSet;
     for (auto& element : notationsStore.GetElements())
     {
-        if (IsLiteralNotation(element.get()))
+        if (NotationsStore::IsLiteralNotation(element.get()))
         {
-            elementsSet.insert(NotationsStore::ConvertToFormula(element.get()));
+            spot::formula literal { NotationsStore::ConvertToFormula(element.get()) };
+            if (notationsStore.GetElements().size() > 1) // Check whether the olg set consists of more then one element
+            {
+                elementsSet.insert(literal);
+            }
+            else
+            {
+                result.push_back({ literal });
+            }
         }
         else
         {
@@ -110,12 +117,6 @@ spot::formula ObligationSet::Olg(spot::formula formula)
         return formula.map(Olg);
     }
 }
-
-bool ObligationSet::IsLiteralNotation(const NotationsStore* element)
-{
-    return NotationsStore::InstanceOf<NotationFormula>(element);
-}
-
 std::vector<std::set<spot::formula>> ObligationSet::Get() const
 {
     return m_obligations;
@@ -126,14 +127,33 @@ std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet)
     out << "Obligations Set: { ";
     for (const auto& obligation : obligationSet.Get())
     {
-        out << "{ ";
-        for (const auto& literal : obligation)
-        {
-            out << literal << " ";
-        }
-        out << "} ";
+        ObligationSet::ExtractOlgSetToStream(out, obligation);
     }
-    out << "}" << std::endl;
+    out << "}";
 
     return out;
+}
+
+const std::string ObligationSet::str()
+{
+    std::ostringstream stringStream;
+
+    stringStream << "Obligations Set: { ";
+    for (const auto& obligation : m_obligations)
+    {
+        ObligationSet::ExtractOlgSetToStream(stringStream, obligation);
+    }
+    stringStream << "}";
+
+    return stringStream.str();
+}
+
+void ObligationSet::ExtractOlgSetToStream(std::ostream& out, const std::set<spot::formula>& olgSet)
+{
+    out << "{ ";
+    for (const auto& literal : olgSet)
+    {
+        out << literal << " ";
+    }
+    out << "} ";
 }

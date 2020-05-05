@@ -15,7 +15,8 @@ void NormalForm::Calculate(crow::websocket::connection& conn)
 
     if (IsEquals(m_formula, m_NFStore[ m_formula ]))
     {
-        std::cout << "NF Calculated Successfully !!" << std::endl;
+        conn.send_text(spot::str_psl(m_NFStore[ m_formula ]));
+        conn.send_text("NF Calculated Successfully !!");
     }
 }
 
@@ -203,7 +204,7 @@ std::vector<std::vector<spot::formula>> NormalForm::ConvertFormulaToSets(spot::f
     {
         std::vector<spot::formula> andSet;
         spot::formula NF { m_NFStore[ child ] };
-        if (NF.kind() != spot::op::Or) // The NF consists of only one element
+        if (NF.kind() != spot::op::Or)
         {
             andSet.push_back(NF);
         }
@@ -254,12 +255,20 @@ void NormalForm::DisplaySet(const std::pair<spot::formula, spot::formula>& set, 
     conn.send_text(spot::str_psl(spot::formula::And({ set.first, set.second })));
 }
 
-std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
+std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertToSet(crow::websocket::connection& conn)
 {
     spot::formula NF { m_NFStore[ m_formula ] };
-    if (NF.is_literal() || NF.is_tt() || NF.is_ff())
+
+    if (NF.kind() != spot::op::Or)
     {
-        return { std::make_pair(NF, spot::formula::X(spot::formula::tt())) };
+        if (NormalForm::IsEquals(spot::formula::ff(), NF))
+        {
+            return {};
+        }
+
+        std::pair<spot::formula, spot::formula> set { std::make_pair(NF, spot::formula::X(spot::formula::tt())) };
+        DisplaySet(set, conn);
+        return { set };
     }
 
     std::set<std::pair<spot::formula, spot::formula>> setsResult;
@@ -280,19 +289,26 @@ std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertNFToSet()
 
 std::vector<spot::formula> NormalForm::SimplifyNextFormulas(const std::set<spot::formula>& nextFormulas)
 {
+    bool isSimplified { false };
     std::vector<spot::formula> simplifiedFormulas;
 
     for (const auto& formula : nextFormulas)
     {
         for (const auto& storedNF : m_NFStore)
         {
-            if (IsEquals(storedNF.second, formula))
+            if (IsEquals(storedNF.second, formula) && !storedNF.second.is_ff())
             {
+                isSimplified = true;
                 simplifiedFormulas.push_back(storedNF.first);
             }
         }
     }
 
+    if (!isSimplified)
+    {
+        simplifiedFormulas.resize(nextFormulas.size());
+        std::copy(nextFormulas.begin(), nextFormulas.end(), simplifiedFormulas.begin());
+    }
     return simplifiedFormulas;
 }
 
@@ -304,8 +320,7 @@ spot::formula NormalForm::ApplyAndNextFormulas(const std::vector<spot::formula>&
     {
         andResult.push_back(formula);
     }
-
-    return spot::formula::And((andResult));
+    return spot::formula::And(andResult);
 }
 
 spot::formula NormalForm::ConstructSetAndFormula(const std::set<spot::formula>& literalsSet)
@@ -334,6 +349,7 @@ std::pair<spot::formula, spot::formula>
 spot::formula NormalForm::SimplifyNexts(const std::set<spot::formula>& nextFormulas)
 {
     std::vector<spot::formula> simplifiedFormulas { SimplifyNextFormulas(nextFormulas) };
+
     spot::formula andApplied { ApplyAndNextFormulas(simplifiedFormulas) };
     spot::formula andSimplified { Parser::Simplify(andApplied) };
 
@@ -363,9 +379,4 @@ void NormalForm::CalculateElementsNF(const std::vector<spot::formula>& elements)
     {
         m_NFStore[ element ] = NF(element);
     }
-}
-
-void NormalForm::Display()
-{
-    std::cout << m_NFStore[ m_formula ] << std::endl;
 }

@@ -90,10 +90,10 @@ std::ostream& operator<<(std::ostream& out, const NotationOp& notationOp)
         out << "U";
         break;
     case spot::op::R:
-        std::cout << "R";
+        out << "R";
         break;
     case spot::op::X:
-        std::cout << "X";
+        out << "X";
         break;
     }
     return out;

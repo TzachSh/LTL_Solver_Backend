@@ -1,5 +1,4 @@
 #include "OlgChecker.h"
-#include <z3++.h>
 
 OlgChecker::OlgChecker(const ObligationSet& obligationSet) : m_obligationSet { obligationSet } {};
 
@@ -35,8 +34,6 @@ bool OlgChecker::CheckObligation(const std::set<spot::formula>& obligation)
     case z3::sat:
         return true;
     case z3::unsat:
-    case z3::unknown:
-    default:
         return false;
     }
 }
@@ -47,6 +44,10 @@ bool OlgChecker::IsConsistent(crow::websocket::connection& conn)
     {
         if (CheckObligation(obligation))
         {
+            std::ostringstream olgStream;
+            olgStream << "Found a consistent obligation: ";
+            ObligationSet::ExtractOlgSetToStream(olgStream, obligation);
+            conn.send_text(olgStream.str());
             return true;
         }
     }

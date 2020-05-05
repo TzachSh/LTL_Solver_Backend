@@ -1,5 +1,4 @@
 #include "ObligationFormula.h"
-#include <include/Constants.h>
 
 ObligationFormula::ObligationFormula(const spot::formula& formula) : Obligation(formula) {}
 
@@ -35,15 +34,3 @@ spot::formula& ObligationFormula::Get()
     return m_OF;
 }
 
-void ObligationFormula::Display()
-{
-    std::cout << m_OF << std::endl;
-}
-
-/*
-spot::formula TraverseOF(spot::formula f)
-{
-    std::cout << f << std::endl;
-
-    return f.map(TraverseOF);
-}*/

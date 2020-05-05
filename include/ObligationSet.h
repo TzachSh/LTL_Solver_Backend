@@ -1,6 +1,7 @@
 #ifndef OBLIGATIONSET_H
 #define OBLIGATIONSET_H
 
+#include "Constants.h"
 #include "Notations.h"
 #include "Obligation.h"
 #include "ObligationFormula.h"
@@ -23,6 +24,7 @@ class ObligationSet : public Obligation
     const std::string str();
     std::vector<std::set<spot::formula>> Get() const;
     friend std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet);
+    static void ExtractOlgSetToStream(std::ostream& out, const std::set<spot::formula>& olgSet);
 
   private:
     static spot::formula Olg(spot::formula formula);
@@ -33,7 +35,8 @@ class ObligationSet : public Obligation
     void HandleAndExtraction(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
     void HandleOperation(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet,
                          NotationsStore* const& element);
-    bool IsLiteralNotation(const NotationsStore* element);
+
+    std::vector<std::set<spot::formula>> m_obligations;
 };
 
 #endif

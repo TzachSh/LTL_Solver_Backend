@@ -1,6 +1,7 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include "NormalForm.h"
 #include <set>
 #include <spot/tl/formula.hh>
 #include <vector>

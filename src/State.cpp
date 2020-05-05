@@ -1,5 +1,4 @@
 #include "State.h"
-#include <include/NormalForm.h>
 
 State::State(spot::formula formula) : m_formula { std::move(formula) } {}
 

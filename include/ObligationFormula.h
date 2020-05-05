@@ -1,6 +1,7 @@
 #ifndef OBLIGATIONFORMULA_H
 #define OBLIGATIONFORMULA_H
 
+#include "Constants.h"
 #include "Obligation.h"
 #include "ObligationSet.h"
 #include <memory>
@@ -14,9 +15,7 @@ class ObligationFormula : public Obligation
     ~ObligationFormula() override;
     void Calculate() override;
     spot::formula& Get();
-    void Display();
     static spot::formula OF(spot::formula formula);
-    //    static spot::formula TraverseOF(spot::formula f);
 
   private:
     spot::formula m_OF;

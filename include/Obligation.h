@@ -4,6 +4,7 @@
 #include <memory>
 #include <set>
 #include <spot/tl/formula.hh>
+#include <utility>
 #include <vector>
 
 class Obligation

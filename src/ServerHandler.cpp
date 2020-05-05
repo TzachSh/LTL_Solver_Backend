@@ -3,11 +3,6 @@
 //
 
 #include "ServerHandler.h"
-#include "ObligationSet.h"
-#include "OlgChecker.h"
-#include "Parser.h"
-#include "TransitionsSystem.h"
-#include <spot/tl/formula.hh>
 
 void ServerHandler::HandleWSOnOpen(crow::websocket::connection& conn)
 {
@@ -43,42 +38,46 @@ void ServerHandler::HandleWSOnMessage(crow::websocket::connection& conn, const s
     {
         conn.send_text(data + " is equivalent to true");
         conn.send_text(data + " is always satisfiable!");
-        return;
-    }
-
-    conn.send_text("Calculating Obligations Set of: " + data);
-    ObligationSet obligationSet { formula };
-    obligationSet.Calculate();
-    conn.send_text(obligationSet.str());
-
-    OlgChecker olgChecker { obligationSet };
-    conn.send_text("Checking for a consistent Obligation...");
-
-    if (olgChecker.IsConsistent(conn))
-    {
-        conn.send_text(data + " is Satisfiable!");
         formulaInfo.isSat = true;
+    }
+    else if (formula.is_ff())
+    {
+        conn.send_text(data + " is equivalent to false");
+        conn.send_text(data + " is unsatisfiable!");
+        formulaInfo.isSat = false;
     }
     else
     {
-        conn.send_text("No consistent Obligation found => Satisfiability is still unknown!");
+        conn.send_text("Calculating Obligations Set of: " + data);
+        ObligationSet obligationSet { formula };
+        obligationSet.Calculate();
+        conn.send_text(obligationSet.str());
 
-        TransitionsSystem transitionsSystem { formula };
-        transitionsSystem.Build(conn);
-        if (transitionsSystem.IsSatisfiable())
+        OlgChecker olgChecker { obligationSet };
+        conn.send_text("Checking for a consistent Obligation...");
+
+        if (olgChecker.IsConsistent(conn))
         {
-            conn.send_text("The L(SCC) is a superset of the Obligation Formula's literals");
             conn.send_text(data + " is Satisfiable!");
             formulaInfo.isSat = true;
         }
         else
         {
-            conn.send_text("The L(SCC) is not a superset of the Obligation Formula's literals");
-            conn.send_text(data + " is not Satisfiable!");
-            formulaInfo.isSat = false;
+            conn.send_text("No consistent Obligation found => Satisfiability is still unknown!");
+
+            TransitionsSystem transitionsSystem { formula };
+            transitionsSystem.Build(conn);
+            if (transitionsSystem.IsSatisfiable())
+            {
+                formulaInfo.isSat = true;
+            }
+            else
+            {
+                conn.send_text(data + " is not Satisfiable!");
+                formulaInfo.isSat = false;
+            }
         }
     }
-
     auto end { std::chrono::steady_clock::now() };
     long execTime { std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() };
 

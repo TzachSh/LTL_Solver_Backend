@@ -1,5 +1,4 @@
 #include "TransitionsSystem.h"
-#include <include/WeakSatisfactionChecker.h>
 
 TransitionsSystem::TransitionsSystem(const spot::formula& formula)
     : m_initialFormula { formula },
@@ -11,6 +10,8 @@ TransitionsSystem::~TransitionsSystem() = default;
 
 void TransitionsSystem::Build(crow::websocket::connection& conn)
 {
+    conn.send_text("Constructing Transitions System...");
+
     std::queue<spot::formula> statesQueue;
     statesQueue.push(m_initialFormula);
 
@@ -18,16 +19,28 @@ void TransitionsSystem::Build(crow::websocket::connection& conn)
     {
         State state { statesQueue.front() };
         statesQueue.pop();
+        conn.send_text("Current State: " + spot::str_psl(state.GetFormula()));
 
         NormalForm NF { state.GetFormula() };
-        NF.Calculate();
-        NF.Display();
+        conn.send_text("Calculating Normal Form...");
+        NF.Calculate(conn);
+        conn.send_text("NF Set:");
+        const auto transitionsSet { NF.ConvertToSet(conn) };
+        if (transitionsSet.size() == 0)
+        {
+            conn.send_text("NF Set is Empty");
+        }
 
-        for (auto const& transition : NF.ConvertNFToSet())
+        for (auto const& transition : transitionsSet)
         {
             spot::formula nextState { GetFormula(transition) };
+            conn.send_text("Next State: " + spot::str_psl(nextState));
+
             if (NormalForm::IsEquals(state.GetFormula(), nextState)) // Found an SCC
             {
+                conn.send_text("Found an SCC");
+                conn.send_text("Checking Weak Satisfaction...");
+
                 spot::formula transitionCondition { transition.first };
                 ObligationFormula of { state.GetFormula() };
                 of.Calculate();
@@ -35,7 +48,14 @@ void TransitionsSystem::Build(crow::websocket::connection& conn)
                 WeakSatisfactionChecker wsChecker { transitionCondition, of.Get(), conn };
                 if (wsChecker.Check())
                 {
+                    conn.send_text("The L(SCC) is a superset of the Obligation Formula's literals");
+                    conn.send_text(spot::str_psl(m_initialFormula) + " is Satisfiable!");
                     m_isSatisfiable = true;
+                    return;
+                }
+                else
+                {
+                    conn.send_text("The L(SCC) is not a superset of the Obligation Formula's literals");
                 }
             }
             else
@@ -45,8 +65,6 @@ void TransitionsSystem::Build(crow::websocket::connection& conn)
 
             state.AddTransition(transition);
         }
-
-        m_states.push_back(state);
     }
 
     m_isSatisfiable = false;
@@ -68,20 +86,4 @@ spot::formula TransitionsSystem::GetFormula(const std::pair<spot::formula, spot:
 bool TransitionsSystem::IsSatisfiable()
 {
     return m_isSatisfiable;
-}
-
-void TransitionsSystem::Display()
-{
-    std::cout << std::endl;
-    std::cout << "States: " << m_states.size() << std::endl;
-    for (auto state : m_states)
-    {
-        std::cout << "Formula: " << state.GetFormula() << std::endl;
-        std::cout << "Transitions:" << std::endl;
-        for (auto transition : state.GetTransitions())
-        {
-            std::cout << "Condition: " << transition.first << std::endl;
-            std::cout << "Next State: " << transition.second.GetFormula() << std::endl;
-        }
-    }
 }

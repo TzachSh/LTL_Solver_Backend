@@ -5,8 +5,13 @@
 #ifndef C___PROJECT_SERVERHANDLER_H
 #define C___PROJECT_SERVERHANDLER_H
 
+#include "ObligationSet.h"
+#include "OlgChecker.h"
+#include "Parser.h"
+#include "TransitionsSystem.h"
 #include "crow_all.h"
 #include <mutex>
+#include <spot/tl/formula.hh>
 #include <unordered_set>
 #include <vector>
 

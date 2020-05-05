@@ -2,7 +2,9 @@
 #define CONSISTENTOLGCHECKER_H
 
 #include "ObligationSet.h"
+#include "crow_all.h"
 #include <vector>
+#include <z3++.h>
 
 class OlgChecker
 {

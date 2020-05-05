@@ -3,6 +3,8 @@
 
 #include "NormalForm.h"
 #include "State.h"
+#include "WeakSatisfactionChecker.h"
+#include "crow_all.h"
 #include <queue>
 #include <spot/tl/formula.hh>
 #include <vector>
@@ -12,7 +14,6 @@ class TransitionsSystem
   public:
     TransitionsSystem(const spot::formula& formula);
     ~TransitionsSystem();
-    void Display();
     void Build(crow::websocket::connection& conn);
     bool IsSatisfiable();
 

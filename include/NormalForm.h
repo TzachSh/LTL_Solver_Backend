@@ -3,6 +3,7 @@
 
 #include "Notations.h"
 #include "Parser.h"
+#include "crow_all.h"
 #include <iostream>
 #include <memory>
 #include <set>
@@ -17,10 +18,9 @@ class NormalForm
     explicit NormalForm(spot::formula formula);
     ~NormalForm();
     void Calculate(crow::websocket::connection& conn);
-    void Display();
     static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
     static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
-    std::set<std::pair<spot::formula, spot::formula>> ConvertNFToSet();
+    std::set<std::pair<spot::formula, spot::formula>> ConvertToSet(crow::websocket::connection& conn);
 
   private:
     static spot::formula NF(spot::formula& formula);

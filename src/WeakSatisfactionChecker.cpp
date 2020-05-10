@@ -12,44 +12,63 @@ WeakSatisfactionChecker::WeakSatisfactionChecker(spot::formula& condition, const
 
 WeakSatisfactionChecker::~WeakSatisfactionChecker() = default;
 
-std::string WeakSatisfactionChecker::DisplayConditionAsSet(const spot::formula& condition)
+void WeakSatisfactionChecker::SendInfoMsg(const spot::formula& condition, const spot::formula& of,
+                                          crow::websocket::connection& conn)
+{
+    conn.send_text("L(SCC): " + DisplayConditionAsSet(condition));
+    conn.send_text("Obligation Formula: " + spot::str_psl(of));
+}
+
+std::string WeakSatisfactionChecker::DisplayConditionAsSet(const spot::formula& conditionFormula)
 {
     std::ostringstream stringStream;
-    if (condition.kind() != spot::op::And)
+
+    if (IsSingeElement(conditionFormula))
     {
-        stringStream << "{ " << condition << " }";
-        return stringStream.str();
+        ExtractSingleElement(conditionFormula, stringStream);
+    }
+    else
+    {
+        ExtractMultipleElements(conditionFormula, stringStream);
     }
 
+    return stringStream.str();
+}
+
+bool WeakSatisfactionChecker::IsSingeElement(const spot::formula& condition) const
+{
+    return condition.kind() != spot::op::And;
+}
+
+void WeakSatisfactionChecker::ExtractMultipleElements(const spot::formula& condition, std::ostringstream& stringStream)
+{
     stringStream << "{ ";
     for (const auto& child : condition)
     {
         stringStream << child << " ";
     }
     stringStream << "}";
-
-    return stringStream.str();
 }
 
-bool WeakSatisfactionChecker::Check()
+void WeakSatisfactionChecker::ExtractSingleElement(const spot::formula& condition, std::ostringstream& stringStream)
+{
+    stringStream << "{ " << condition << " }";
+}
+
+bool WeakSatisfactionChecker::IsSatisfies()
 {
     std::vector<spot::formula> elements { m_of };
     m_of.map(NormalForm::GetElementsByOrder, elements);
 
     StoreElementsSatisfactionInfo(elements);
 
-    return m_satisfactionInfo[ m_of ];
+    return m_satisfactionInfo[ m_of ] == spot::formula::tt();
 }
 
 bool WeakSatisfactionChecker::StoreConditionLiterals(spot::formula formula, std::vector<spot::formula>& literalsStore)
 {
-    if (formula.is_literal() || formula.is_tt() || formula.is_ff())
-    {
-        literalsStore.push_back(formula);
-        return true;
-    }
-
-    return false;
+    literalsStore.push_back(formula);
+    return (formula.is_literal() || formula.is_tt() || formula.is_ff());
 }
 
 void WeakSatisfactionChecker::StoreElementsSatisfactionInfo(const std::vector<spot::formula>& elements)

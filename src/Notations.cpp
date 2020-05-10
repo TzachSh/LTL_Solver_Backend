@@ -1,16 +1,6 @@
 #include "Notations.h"
 
-NotationsStore::~NotationsStore() {}
-
-void NotationsStore::AddElement(NotationsStore* element)
-{
-    m_notations.insert(m_notations.begin(), std::shared_ptr<NotationsStore>(element));
-}
-
-std::vector<std::shared_ptr<NotationsStore>> NotationsStore::GetElements() const
-{
-    return m_notations;
-}
+NotationsStore::~NotationsStore() = default;
 
 template <typename Base, typename T> bool NotationsStore::InstanceOf(const T* ptr)
 {
@@ -20,6 +10,16 @@ template <typename Base, typename T> bool NotationsStore::InstanceOf(const T* pt
 template <typename S, typename T> T NotationsStore::Convert(NotationsStore* element)
 {
     return dynamic_cast<S*>(element)->Get();
+}
+
+void NotationsStore::AddElement(NotationsStore* element)
+{
+    m_notations.insert(m_notations.begin(), std::shared_ptr<NotationsStore>(element));
+}
+
+std::vector<std::shared_ptr<NotationsStore>> NotationsStore::GetElements() const
+{
+    return m_notations;
 }
 
 NotationFormula::NotationFormula(spot::formula& formula) : m_formula { formula } {}
@@ -53,8 +53,10 @@ bool NotationsStore::IsLiteralNotation(NotationsStore* element)
         spot::formula formula { NotationsStore::ConvertToFormula(element) };
         return (formula.is_literal() || formula.is_tt() || formula.is_ff());
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 bool NotationsStore::CreateReversePolishNotation(spot::formula& formula, NotationsStore& notationsStore)
@@ -67,6 +69,7 @@ bool NotationsStore::CreateReversePolishNotation(spot::formula& formula, Notatio
     {
         notationsStore.AddElement(new NotationOp(formula.kind()));
     }
+
     return formula.is_literal();
 }
 
@@ -110,11 +113,10 @@ std::ostream& operator<<(std::ostream& out, const NotationsStore& notationsStore
         }
         else
         {
-            NotationOp notationOp { NotationsStore::ConvertToOperator(element.get()) };
-            out << notationOp;
+            out << static_cast<NotationOp>(NotationsStore::ConvertToOperator(element.get()));
         }
     }
-    out << std::endl;
 
+    out << std::endl;
     return out;
 }

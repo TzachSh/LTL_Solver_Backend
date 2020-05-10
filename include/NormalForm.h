@@ -18,7 +18,7 @@ class NormalForm
     explicit NormalForm(spot::formula formula);
     ~NormalForm();
     void Calculate(crow::websocket::connection& conn);
-    static bool IsEquals(const spot::formula& formulaA, const spot::formula& formulaB);
+    static bool AreEquals(const spot::formula& formulaA, const spot::formula& formulaB);
     static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
     std::set<std::pair<spot::formula, spot::formula>> ConvertToSet(crow::websocket::connection& conn);
 
@@ -57,6 +57,19 @@ class NormalForm
     spot::formula ApplyAndNextFormulas(const std::vector<spot::formula>& nextFormulas);
     spot::formula ConstructSetAndFormula(const std::set<spot::formula>& literalsSet);
     spot::formula SimplifyNexts(const std::set<spot::formula>& nextFormulas);
+
+    static void HandleNFInsertion(spot::formula& formula);
+    static void MoveElement(std::stack<spot::formula>& result, std::vector<spot::formula>& opResult);
+    static void StoreLiteralNF(const spot::formula& literal);
+    static std::vector<spot::formula> PerformAndDNF(const spot::formula& NF, const spot::formula& nextFormula);
+    static void ExtractDNFChildren(const spot::formula& formula, std::vector<spot::formula>& set, bool isAndOp = false);
+    static void ExtractXChild(const spot::formula& formula, std::vector<spot::formula>& nextResult);
+    std::pair<spot::formula, spot::formula> CreateNFPair(spot::formula& NF) const;
+    std::set<std::pair<spot::formula, spot::formula>> CreateNFSetFromDNF(crow::websocket::connection& conn,
+                                                                         spot::formula& NF);
+    std::set<std::pair<spot::formula, spot::formula>> CreateNFSetFromSingleElement(crow::websocket::connection& conn,
+                                                                                   spot::formula& NF) const;
+    std::vector<spot::formula> SimplifyNF(const std::set<spot::formula>& nextFormulas) const;
 
     static std::map<spot::formula, spot::formula> m_NFStore;
     spot::formula m_formula;

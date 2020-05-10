@@ -21,22 +21,24 @@ class ObligationSet : public Obligation
     explicit ObligationSet(const spot::formula& formula);
     ~ObligationSet() override;
     void Calculate() override;
-    const std::string str();
+    std::string str();
     std::vector<std::set<spot::formula>> Get() const;
     friend std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet);
     static void ExtractOlgSetToStream(std::ostream& out, const std::set<spot::formula>& olgSet);
 
   private:
-    static spot::formula Olg(spot::formula formula);
-
     std::vector<std::set<spot::formula>> CalculateSets(const NotationsStore& notationsStore);
-    void HandleOrExtraction(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
+    void HandleOr(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
     void InitializeSet(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
     void HandleAndExtraction(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
     void HandleOperation(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet,
                          NotationsStore* const& element);
 
     std::vector<std::set<spot::formula>> m_obligations;
+    void HandleLiteralInsertion(const NotationsStore& notationsStore, std::vector<std::set<spot::formula>>& result,
+                                std::set<spot::formula>& elementsSet,
+                                const std::shared_ptr<NotationsStore>& element) const;
+    void HandleAnd(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet);
 };
 
 #endif

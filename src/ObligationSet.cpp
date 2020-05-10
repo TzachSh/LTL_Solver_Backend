@@ -13,15 +13,7 @@ std::vector<std::set<spot::formula>> ObligationSet::CalculateSets(const Notation
     {
         if (NotationsStore::IsLiteralNotation(element.get()))
         {
-            spot::formula literal { NotationsStore::ConvertToFormula(element.get()) };
-            if (notationsStore.GetElements().size() > 1) // Check whether the olg set consists of more then one element
-            {
-                elementsSet.insert(literal);
-            }
-            else
-            {
-                result.push_back({ literal });
-            }
+            HandleLiteralInsertion(notationsStore, result, elementsSet, element);
         }
         else
         {
@@ -32,27 +24,47 @@ std::vector<std::set<spot::formula>> ObligationSet::CalculateSets(const Notation
 
     return result;
 }
+
+void ObligationSet::HandleLiteralInsertion(const NotationsStore& notationsStore,
+                                           std::vector<std::set<spot::formula>>& result,
+                                           std::set<spot::formula>& elementsSet,
+                                           const std::shared_ptr<NotationsStore>& element) const
+{
+    spot::formula literal { NotationsStore::ConvertToFormula(element.get()) };
+
+    constexpr int MIN_OP_ARGS = 2;
+    if (notationsStore.GetElements().size() >= MIN_OP_ARGS)
+    {
+        elementsSet.insert(literal);
+    }
+    else
+    {
+        result.push_back({ literal });
+    }
+}
+
 void ObligationSet::HandleOperation(std::vector<std::set<spot::formula>>& result,
                                     const std::set<spot::formula>& elementsSet, NotationsStore* const& element)
 {
     switch (NotationsStore::ConvertToOperator(element))
     {
     case spot::op::Or:
-    {
-        HandleOrExtraction(result, elementsSet);
+        HandleOr(result, elementsSet);
+        break;
+    case spot::op::And:
+        HandleAnd(result, elementsSet);
         break;
     }
-    case spot::op::And:
+}
+void ObligationSet::HandleAnd(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet)
+{
+    if (result.empty())
     {
-        if (result.empty())
-        {
-            InitializeSet(result, elementsSet);
-        }
-        else
-        {
-            HandleAndExtraction(result, elementsSet);
-        }
+        InitializeSet(result, elementsSet);
     }
+    else
+    {
+        HandleAndExtraction(result, elementsSet);
     }
 }
 
@@ -71,6 +83,7 @@ void ObligationSet::InitializeSet(std::vector<std::set<spot::formula>>& result,
                                   const std::set<spot::formula>& elementsSet)
 {
     std::set<spot::formula> initSet;
+
     for (const auto& literal : elementsSet)
     {
         initSet.insert(literal);
@@ -78,8 +91,8 @@ void ObligationSet::InitializeSet(std::vector<std::set<spot::formula>>& result,
 
     result.push_back(initSet);
 }
-void ObligationSet::HandleOrExtraction(std::vector<std::set<spot::formula>>& result,
-                                       const std::set<spot::formula>& elementsSet)
+
+void ObligationSet::HandleOr(std::vector<std::set<spot::formula>>& result, const std::set<spot::formula>& elementsSet)
 {
     for (const auto& literal : elementsSet)
     {
@@ -90,33 +103,13 @@ void ObligationSet::HandleOrExtraction(std::vector<std::set<spot::formula>>& res
 void ObligationSet::Calculate()
 {
     spot::formula olgFormula { ObligationFormula::OF(m_formula) };
-    NotationsStore notationsStore;
 
+    NotationsStore notationsStore;
     olgFormula.traverse(NotationsStore::CreateReversePolishNotation, notationsStore);
+
     m_obligations = CalculateSets(notationsStore);
 }
 
-spot::formula ObligationSet::Olg(spot::formula formula)
-{
-    if (formula.is_tt() || formula.is_ff() || formula.is_literal())
-    {
-        return formula;
-    }
-    switch (formula.kind())
-    {
-    case spot::op::Not:
-        return formula;
-    case spot::op::X:
-        return formula[ static_cast<int>(Child::LEFT) ].map((Olg));
-    case spot::op::U:
-    case spot::op::R:
-        return formula[ static_cast<int>(Child::RIGHT) ].map(Olg);
-    case spot::op::Or:
-    case spot::op::And:
-    default:
-        return formula.map(Olg);
-    }
-}
 std::vector<std::set<spot::formula>> ObligationSet::Get() const
 {
     return m_obligations;
@@ -134,7 +127,7 @@ std::ostream& operator<<(std::ostream& out, const ObligationSet& obligationSet)
     return out;
 }
 
-const std::string ObligationSet::str()
+std::string ObligationSet::str()
 {
     std::ostringstream stringStream;
 

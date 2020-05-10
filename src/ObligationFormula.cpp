@@ -15,6 +15,7 @@ spot::formula ObligationFormula::OF(spot::formula formula)
     {
         return formula;
     }
+
     switch (formula.kind())
     {
     case spot::op::Not:
@@ -33,4 +34,3 @@ spot::formula& ObligationFormula::Get()
 {
     return m_OF;
 }
-

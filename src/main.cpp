@@ -10,10 +10,10 @@ int main(int argc, char** argv)
     CROW_ROUTE(app, "/ws")
         .websocket()
         .onopen([&](crow::websocket::connection& conn) {
-          serverHandler.HandleWSOnOpen(conn);
+            serverHandler.HandleWSOnOpen(conn);
         })
         .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
-          serverHandler.HandleWSOnClose(conn, reason);
+            serverHandler.HandleWSOnClose(conn, reason);
         })
         .onmessage([&](crow::websocket::connection& conn, const std::string& data, bool is_binary) {
             serverHandler.HandleWSOnMessage(conn, data);

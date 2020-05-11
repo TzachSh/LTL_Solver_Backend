@@ -18,8 +18,6 @@ class NormalForm
     explicit NormalForm(spot::formula formula);
     ~NormalForm();
     void Calculate(crow::websocket::connection& conn);
-    static bool AreEquals(const spot::formula& formulaA, const spot::formula& formulaB);
-    static spot::formula GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements);
     std::set<std::pair<spot::formula, spot::formula>> ConvertToSet(crow::websocket::connection& conn);
 
   private:
@@ -53,10 +51,9 @@ class NormalForm
     void DisplaySet(const std::pair<spot::formula, spot::formula>& set, crow::websocket::connection& conn) const;
     void CalculateElementsNF(const std::vector<spot::formula>& elements);
 
-    std::vector<spot::formula> SimplifyNextFormulas(const std::set<spot::formula>& nextFormulas);
     spot::formula ApplyAndNextFormulas(const std::vector<spot::formula>& nextFormulas);
     spot::formula ConstructSetAndFormula(const std::set<spot::formula>& literalsSet);
-    spot::formula SimplifyNexts(const std::set<spot::formula>& nextFormulas);
+    spot::formula ConstructSetNextFormula(const std::set<spot::formula>& nextFormulas);
 
     static void HandleNFInsertion(spot::formula& formula);
     static void MoveElement(std::stack<spot::formula>& result, std::vector<spot::formula>& opResult);
@@ -69,7 +66,7 @@ class NormalForm
                                                                          spot::formula& NF);
     std::set<std::pair<spot::formula, spot::formula>> CreateNFSetFromSingleElement(crow::websocket::connection& conn,
                                                                                    spot::formula& NF) const;
-    std::vector<spot::formula> SimplifyNF(const std::set<spot::formula>& nextFormulas) const;
+    std::vector<spot::formula> TransformSetToVector(const std::set<spot::formula>& nextFormulas) const;
 
     static std::map<spot::formula, spot::formula> m_NFStore;
     spot::formula m_formula;

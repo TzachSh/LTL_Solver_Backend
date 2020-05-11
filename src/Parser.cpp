@@ -2,6 +2,7 @@
 
 Parser::Parser() = default;
 Parser::~Parser() = default;
+
 Parser::Parser(std::vector<std::string>& formulas) : m_formulas { formulas } {}
 
 std::vector<spot::formula> Parser::Parse()
@@ -11,7 +12,6 @@ std::vector<spot::formula> Parser::Parse()
     {
         parsedFormulas.push_back(Parse(formula));
     }
-
     return parsedFormulas;
 }
 
@@ -24,11 +24,11 @@ spot::formula Parser::Parse(const std::string& formula)
     }
     else
     {
-        return ParseFormula(parsedFormula);
+        return Simplify(parsedFormula);
     }
 }
 
-spot::formula Parser::ParseFormula(const spot::parsed_formula& parsedFormula) const
+spot::formula Parser::Simplify(const spot::parsed_formula& parsedFormula) const
 {
     spot::formula simplifiedFormula { Simplify(parsedFormula.f) };
 

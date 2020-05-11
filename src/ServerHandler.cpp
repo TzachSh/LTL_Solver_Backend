@@ -1,37 +1,52 @@
 #include "ServerHandler.h"
 
+ServerHandler::ServerHandler()
+{
+    InitInfoFields();
+}
+
 void ServerHandler::HandleWSOnOpen(crow::websocket::connection& conn)
 {
-    CROW_LOG_INFO << "new websocket connection";
     std::lock_guard<std::mutex> _(m_mtx);
+    CROW_LOG_INFO << "new websocket connection";
     m_users.insert(&conn);
 }
 
 void ServerHandler::HandleWSOnClose(crow::websocket::connection& conn, const std::string& reason)
 {
-    CROW_LOG_INFO << "websocket connection closed: " << reason;
     std::lock_guard<std::mutex> _(m_mtx);
+    CROW_LOG_INFO << "websocket connection closed: " << reason;
     m_users.erase(&conn);
 }
 
 void ServerHandler::HandleWSOnMessage(crow::websocket::connection& conn, const std::string& data)
 {
     std::lock_guard<std::mutex> _(m_mtx);
+    FormulaInfo formulaInfo { data };
 
     SendInitMessages(conn, data);
-    FormulaInfo formulaInfo { data };
 
     auto startTime { std::chrono::steady_clock::now() };
 
-    conn.send_text("Parsing Formula...");
-    spot::formula formula { ParseFormula(data) };
-    conn.send_text("Parsed, Simplified and FG Eliminated: " + spot::str_psl(formula));
-
+    spot::formula formula { PerformParsing(conn, data) };
     RunAlgorithm(data, formula, conn, formulaInfo);
 
     auto endTime { std::chrono::steady_clock::now() };
     long execTime { std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() };
 
+    SaveCalculationData(conn, formulaInfo, execTime);
+}
+
+spot::formula ServerHandler::PerformParsing(crow::websocket::connection& conn, const std::string& data) const
+{
+    conn.send_text("Parsing Formula...");
+    spot::formula formula { ParseFormula(data) };
+    conn.send_text("Parsed, Simplified and FG Eliminated: " + spot::str_psl(formula));
+    return formula;
+}
+
+void ServerHandler::SaveCalculationData(crow::websocket::connection& conn, FormulaInfo& formulaInfo, long execTime)
+{
     SaveCalculationInfo(formulaInfo, execTime);
     SendCalculationTime(conn, execTime);
 }
@@ -49,7 +64,6 @@ void ServerHandler::RunAlgorithm(const std::string& data, const spot::formula& f
     }
     else
     {
-        conn.send_text("Checking Satisfiability...");
         HandleSATCheck(data, formula, conn, formulaInfo);
     }
 }
@@ -59,12 +73,14 @@ void ServerHandler::SaveCalculationInfo(FormulaInfo& formulaInfo, long execTime)
     formulaInfo.execTime = execTime;
     m_formulasInfo.push_back(formulaInfo);
 }
+
 void ServerHandler::SendCalculationTime(crow::websocket::connection& conn, long execTime) const
 {
     conn.send_text("********************************************");
     conn.send_text("Calculation Time: " + std::to_string(execTime) + " ms");
     conn.send_text("********************************************");
 }
+
 void ServerHandler::SendInitMessages(crow::websocket::connection& conn, const std::string& data) const
 {
     CROW_LOG_INFO << "websocket received data: " << data;
@@ -81,10 +97,13 @@ spot::formula ServerHandler::ParseFormula(const std::string& data) const
 void ServerHandler::HandleSATCheck(const std::string& data, const spot::formula& formula,
                                    crow::websocket::connection& conn, FormulaInfo& formulaInfo) const
 {
+    conn.send_text("Checking Satisfiability...");
     conn.send_text("Calculating Obligations Set of: " + data);
+
     ObligationSet obligationSet { CalculateOlgSet(conn, formula) };
 
     conn.send_text("Checking for a consistent Obligation...");
+
     OlgChecker olgChecker { obligationSet };
 
     if (olgChecker.IsConsistent(conn))
@@ -100,8 +119,8 @@ void ServerHandler::HandleInconsistentOlg(const std::string& data, const spot::f
                                           crow::websocket::connection& conn, FormulaInfo& formulaInfo) const
 {
     conn.send_text("No consistent Obligation found => Satisfiability is still unknown!");
-
     conn.send_text("Constructing Transitions System...");
+
     TransitionsSystem transitionsSystem { formula };
     formulaInfo.isSat = transitionsSystem.Build(conn);
 
@@ -150,16 +169,17 @@ crow::response ServerHandler::HandleFetchExperimentsData()
 {
     std::lock_guard<std::mutex> _(m_mtx);
 
-    CROW_LOG_INFO << "experiments requested";
+    CROW_LOG_INFO << "experiments data requested";
     crow::json::wvalue json;
 
     for (int i = 0; i < m_formulasInfo.size(); i++)
     {
-        json[ i ][ "formula" ] = m_formulasInfo[ i ].formula;
-        json[ i ][ "execTime" ] = m_formulasInfo[ i ].execTime;
-        json[ i ][ "isSat" ] = m_formulasInfo[ i ].isSat;
+        json[ i ][ m_infoFields[ InfoFields::FORMULA ] ] = m_formulasInfo[ i ].formula;
+        json[ i ][ m_infoFields[ InfoFields::EXEC_TIME ] ] = m_formulasInfo[ i ].execTime;
+        json[ i ][ m_infoFields[ InfoFields::IS_SAT ] ] = m_formulasInfo[ i ].isSat;
     }
-    CROW_LOG_INFO << "experiments completed";
+
+    CROW_LOG_INFO << "experiments data sent";
     return crow::json::dump(json);
 }
 
@@ -169,6 +189,13 @@ crow::response ServerHandler::HandleResetExperiments()
     CROW_LOG_INFO << "reset requested";
 
     m_formulasInfo.clear();
-    CROW_LOG_INFO << "reset completed";
+    CROW_LOG_INFO << "reset success sent";
     return crow::response(SUCCESS_CODE);
+}
+
+void ServerHandler::InitInfoFields()
+{
+    m_infoFields[ InfoFields::FORMULA ] = "formula";
+    m_infoFields[ InfoFields::EXEC_TIME ] = "execTime";
+    m_infoFields[ InfoFields::IS_SAT ] = "isSat";
 }

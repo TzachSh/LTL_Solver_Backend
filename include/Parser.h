@@ -20,7 +20,7 @@ class Parser
     ~Parser();
 
   private:
-    spot::formula ParseFormula(const spot::parsed_formula& parsedFormula) const;
+    spot::formula Simplify(const spot::parsed_formula& parsedFormula) const;
     std::vector<std::string> m_formulas;
 };
 

@@ -3,6 +3,7 @@
 
 #include "NormalForm.h"
 #include "State.h"
+#include "Utilities.h"
 #include "WeakSatisfactionChecker.h"
 #include "crow_all.h"
 #include <queue>
@@ -33,7 +34,7 @@ class TransitionsSystem
     bool ContinueExploring(crow::websocket::connection& conn) const;
     bool IsSCC(State& state, const spot::formula& nextState) const;
     std::queue<spot::formula> InitTransitionsSystem();
-    void InsertNextState(std::queue<spot::formula>& statesQueue, const spot::formula& nextState);
+    void InsertState(std::queue<spot::formula>& statesQueue, const spot::formula& nextState);
 };
 
 #endif

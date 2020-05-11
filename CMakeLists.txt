@@ -36,4 +36,4 @@ add_executable(C___Project
         src/State.cpp
         src/WeakSatisfactionChecker.cpp
         src/Notations.cpp
-        src/TransitionsSystem.cpp src/ServerHandler.cpp include/ServerHandler.h)
+        src/TransitionsSystem.cpp src/ServerHandler.cpp include/ServerHandler.h include/Utilities.h src/Utilities.cpp)

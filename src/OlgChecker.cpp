@@ -5,7 +5,7 @@ OlgChecker::~OlgChecker() = default;
 
 bool OlgChecker::IsNegation(const spot::formula& literal)
 {
-    return literal.kind() == spot::op::Not;
+    return literal.is(spot::op::Not);
 }
 
 bool OlgChecker::CheckObligation(const std::set<spot::formula>& obligation)
@@ -68,7 +68,6 @@ bool OlgChecker::IsConsistent(crow::websocket::connection& conn)
             return true;
         }
     }
-
     return false;
 }
 

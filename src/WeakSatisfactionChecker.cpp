@@ -58,7 +58,7 @@ void WeakSatisfactionChecker::ExtractSingleElement(const spot::formula& conditio
 bool WeakSatisfactionChecker::IsSatisfies()
 {
     std::vector<spot::formula> elements { m_of };
-    m_of.map(NormalForm::GetElementsByOrder, elements);
+    m_of.map(Utilities::GetElementsByOrder, elements);
 
     StoreElementsSatisfactionInfo(elements);
 

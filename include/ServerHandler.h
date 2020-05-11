@@ -28,6 +28,7 @@ struct FormulaInfo
 class ServerHandler
 {
   public:
+    ServerHandler();
     void HandleWSOnOpen(crow::websocket::connection& conn);
     void HandleWSOnClose(crow::websocket::connection& conn, const std::string& reason);
     void HandleWSOnMessage(crow::websocket::connection& conn, const std::string& data);
@@ -51,10 +52,14 @@ class ServerHandler
     void HandleInconsistentOlg(const std::string& data, const spot::formula& formula, crow::websocket::connection& conn,
                                FormulaInfo& formulaInfo) const;
     void SendUnSATMsg(const std::string& data, crow::websocket::connection& conn) const;
+    void InitInfoFields();
 
     std::mutex m_mtx;
     std::unordered_set<crow::websocket::connection*> m_users;
     std::vector<FormulaInfo> m_formulasInfo;
+    std::map<InfoFields, std::string> m_infoFields;
+    void SaveCalculationData(crow::websocket::connection& conn, FormulaInfo& formulaInfo, long execTime);
+    spot::formula PerformParsing(crow::websocket::connection& conn, const std::string& data) const;
 };
 
 #endif // C___PROJECT_SERVERHANDLER_H

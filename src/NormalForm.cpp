@@ -1,4 +1,5 @@
 #include "NormalForm.h"
+#include <include/Utilities.h>
 std::map<spot::formula, spot::formula> NormalForm::m_NFStore;
 
 NormalForm::NormalForm(spot::formula formula) : m_formula { std::move(formula) } {}
@@ -7,11 +8,11 @@ NormalForm::~NormalForm() = default;
 void NormalForm::Calculate(crow::websocket::connection& conn)
 {
     std::vector<spot::formula> elements { m_formula };
-    m_formula.map(GetElementsByOrder, elements);
+    m_formula.map(Utilities::GetElementsByOrder, elements);
 
     CalculateElementsNF(elements);
 
-    if (AreEquals(m_formula, m_NFStore[ m_formula ]))
+    if (Utilities::AreEquals(m_formula, m_NFStore[ m_formula ]))
     {
         conn.send_text(spot::str_psl(m_NFStore[ m_formula ]));
         conn.send_text("NF Calculated Successfully !!");
@@ -64,11 +65,6 @@ spot::formula NormalForm::ApplyOperation(spot::formula& formula)
     }
 }
 
-bool NormalForm::AreEquals(const spot::formula& formulaA, const spot::formula& formulaB)
-{
-    return spot::are_equivalent(formulaA, formulaB);
-}
-
 std::vector<spot::formula> NormalForm::GetNaryResult(std::stack<spot::formula>& result)
 {
     std::vector<spot::formula> opResult;
@@ -102,12 +98,6 @@ void NormalForm::StoreLiteralNF(const spot::formula& literal)
     m_NFStore[ literal ] = spot::formula::And({ literal, spot::formula::X(spot::formula::tt()) });
 }
 
-spot::formula NormalForm::GetElementsByOrder(spot::formula formula, std::vector<spot::formula>& elements)
-{
-    elements.insert(elements.begin(), formula);
-    return formula.map(GetElementsByOrder, elements);
-}
-
 spot::formula NormalForm::ApplyR(spot::formula& formula)
 {
     std::pair<spot::formula, spot::formula> formulasPair { formula[ static_cast<int>(Child::LEFT) ],
@@ -115,6 +105,7 @@ spot::formula NormalForm::ApplyR(spot::formula& formula)
 
     spot::formula leftFormula { CalculateRLeftFormula(m_NFStore[ formulasPair.first ],
                                                       m_NFStore[ formulasPair.second ]) };
+
     spot::formula nextFormula { ApplyRAnd(m_NFStore[ formulasPair.second ],
                                           GetReleaseXFormula(formulasPair.first, formulasPair.second)) };
 
@@ -316,7 +307,7 @@ std::set<std::pair<spot::formula, spot::formula>> NormalForm::ConvertToSet(crow:
 std::set<std::pair<spot::formula, spot::formula>>
     NormalForm::CreateNFSetFromSingleElement(crow::websocket::connection& conn, spot::formula& NF) const
 {
-    if (AreEquals(spot::formula::ff(), NF))
+    if (Utilities::AreEquals(spot::formula::ff(), NF))
     {
         return {};
     }
@@ -338,10 +329,10 @@ std::set<std::pair<spot::formula, spot::formula>> NormalForm::CreateNFSetFromDNF
         child.traverse(TranslateNFToSet, transformNF);
 
         auto simplifiedSet { SimplifySet(transformNF) };
-        if (!AreEquals(simplifiedSet.first, spot::formula::ff()))
+        if (!Utilities::AreEquals(simplifiedSet.first, spot::formula::ff()))
         {
             setsResult.insert(simplifiedSet);
-            DisplaySet(SimplifySet(transformNF), conn);
+            DisplaySet(simplifiedSet, conn);
         }
     }
 
@@ -351,37 +342,6 @@ std::set<std::pair<spot::formula, spot::formula>> NormalForm::CreateNFSetFromDNF
 std::pair<spot::formula, spot::formula> NormalForm::CreateNFPair(spot::formula& NF) const
 {
     return { std::make_pair(NF, spot::formula::X(spot::formula::tt())) };
-}
-
-std::vector<spot::formula> NormalForm::SimplifyNextFormulas(const std::set<spot::formula>& nextFormulas)
-{
-    std::vector<spot::formula> simplifiedFormulas { SimplifyNF(nextFormulas) };
-
-    if (simplifiedFormulas.empty())
-    {
-        simplifiedFormulas.resize(nextFormulas.size());
-        std::copy(nextFormulas.begin(), nextFormulas.end(), simplifiedFormulas.begin());
-    }
-
-    return simplifiedFormulas;
-}
-
-std::vector<spot::formula> NormalForm::SimplifyNF(const std::set<spot::formula>& nextFormulas) const
-{
-    std::vector<spot::formula> simplifiedFormulas;
-
-    for (const auto& formula : nextFormulas)
-    {
-        for (const auto& storedNF : m_NFStore)
-        {
-            if (AreEquals(storedNF.second, formula) && !storedNF.second.is_ff())
-            {
-                simplifiedFormulas.push_back(storedNF.first);
-            }
-        }
-    }
-
-    return simplifiedFormulas;
 }
 
 spot::formula NormalForm::ApplyAndNextFormulas(const std::vector<spot::formula>& nextFormulas)
@@ -411,18 +371,25 @@ spot::formula NormalForm::ConstructSetAndFormula(const std::set<spot::formula>& 
 std::pair<spot::formula, spot::formula>
     NormalForm::SimplifySet(std::pair<std::set<spot::formula>, std::set<spot::formula>>& set)
 {
-    return std::make_pair(ConstructSetAndFormula(set.first), SimplifyNexts(set.second));
+    return std::make_pair(ConstructSetAndFormula(set.first), ConstructSetNextFormula(set.second));
 }
 
-spot::formula NormalForm::SimplifyNexts(const std::set<spot::formula>& nextFormulas)
+spot::formula NormalForm::ConstructSetNextFormula(const std::set<spot::formula>& nextFormulas)
 {
-    std::vector<spot::formula> simplifiedFormulas { SimplifyNextFormulas(nextFormulas) };
+    std::vector<spot::formula> nextsVec { TransformSetToVector(nextFormulas) };
 
-    spot::formula andApplied { ApplyAndNextFormulas(simplifiedFormulas) };
+    spot::formula andApplied { ApplyAndNextFormulas(nextsVec) };
 
     spot::formula andSimplified { Parser::Simplify(andApplied) };
 
     return andSimplified.is_ff() ? spot::formula::X(andApplied) : spot::formula::X(andSimplified);
+}
+
+std::vector<spot::formula> NormalForm::TransformSetToVector(const std::set<spot::formula>& nextFormulas) const
+{
+    std::vector<spot::formula> nextsToVec(nextFormulas.size());
+    std::copy(nextFormulas.begin(), nextFormulas.end(), nextsToVec.begin());
+    return nextsToVec;
 }
 
 bool NormalForm::TranslateNFToSet(spot::formula& NF,
@@ -438,10 +405,7 @@ bool NormalForm::TranslateNFToSet(spot::formula& NF,
         resultSet.second.insert(NF[ static_cast<int>(Child::LEFT) ]);
         return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 void NormalForm::CalculateElementsNF(const std::vector<spot::formula>& elements)

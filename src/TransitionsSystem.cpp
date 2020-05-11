@@ -25,7 +25,7 @@ bool TransitionsSystem::Build(crow::websocket::connection& conn)
             }
             else
             {
-                InsertNextState(statesQueue, nextState);
+                InsertState(statesQueue, nextState);
             }
 
             state.AddTransition(transition);
@@ -34,7 +34,7 @@ bool TransitionsSystem::Build(crow::websocket::connection& conn)
     return false;
 }
 
-void TransitionsSystem::InsertNextState(std::queue<spot::formula>& statesQueue, const spot::formula& nextState)
+void TransitionsSystem::InsertState(std::queue<spot::formula>& statesQueue, const spot::formula& nextState)
 {
     if (m_statesTrack.find(nextState) == m_statesTrack.end())
     {
@@ -47,12 +47,13 @@ std::queue<spot::formula> TransitionsSystem::InitTransitionsSystem()
 {
     std::queue<spot::formula> statesQueue;
     statesQueue.push(m_initialFormula);
+
     return statesQueue;
 }
 
 bool TransitionsSystem::IsSCC(State& state, const spot::formula& nextState) const
 {
-    return NormalForm::AreEquals(state.GetFormula(), nextState);
+    return Utilities::AreEquals(state.GetFormula(), nextState);
 }
 
 bool TransitionsSystem::CheckWeakSatisfaction(State& state, spot::formula& transitionCondition,

@@ -10,4 +10,11 @@ enum class Child
     RIGHT = 1
 };
 
+enum class InfoFields
+{
+    FORMULA,
+    IS_SAT,
+    EXEC_TIME
+};
+
 #endif

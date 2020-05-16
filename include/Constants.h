@@ -13,8 +13,10 @@ enum class Child
 enum class InfoFields
 {
     FORMULA,
+    DEPTH,
     IS_SAT,
-    EXEC_TIME
+    EXEC_TIME,
+    IS_CONSISTENT
 };
 
 #endif

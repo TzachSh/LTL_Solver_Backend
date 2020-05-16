@@ -13,16 +13,21 @@
 
 struct FormulaInfo
 {
-    explicit FormulaInfo(const std::string& formula, bool isSat = false, long execTime = 0)
+    explicit FormulaInfo(const std::string& formula, const int depth = 0, bool isSat = false, long execTime = 0,
+                         const bool isConsistent = false)
         : formula { formula },
+          depth { depth },
           isSat { isSat },
-          execTime { execTime }
+          execTime { execTime },
+          isConsistent { isConsistent }
     {
     }
 
     std::string formula;
+    int depth;
     bool isSat;
     long execTime;
+    bool isConsistent;
 };
 
 class ServerHandler
@@ -60,6 +65,7 @@ class ServerHandler
     std::map<InfoFields, std::string> m_infoFields;
     void SaveCalculationData(crow::websocket::connection& conn, FormulaInfo& formulaInfo, long execTime);
     spot::formula PerformParsing(crow::websocket::connection& conn, const std::string& data) const;
+    int CalculateDepth(crow::websocket::connection& conn, spot::formula& formula) const;
 };
 
 #endif // C___PROJECT_SERVERHANDLER_H

@@ -49,7 +49,18 @@ z3::solver OlgChecker::CreateAndClause(const std::set<spot::formula>& obligation
 
 void OlgChecker::AddLiteral(z3::context& context, z3::solver& solver, const spot::formula& literal)
 {
-    solver.add(context.bool_const(literal.ap_name().c_str()));
+    if (literal.is_ff())
+    {
+        solver.add(context.bool_val(false));
+    }
+    else if (literal.is_tt())
+    {
+        solver.add(context.bool_val(true));
+    }
+    else
+    {
+        solver.add(context.bool_const(literal.ap_name().c_str()));
+    }
 }
 
 void OlgChecker::AddNegationLiteral(z3::context& context, z3::solver& solver, const spot::formula& literal)

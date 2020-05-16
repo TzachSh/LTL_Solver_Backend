@@ -10,3 +10,13 @@ spot::formula Utilities::GetElementsByOrder(spot::formula formula, std::vector<s
     elements.insert(elements.begin(), formula);
     return formula.map(GetElementsByOrder, elements);
 }
+
+bool Utilities::CalculateDepth(spot::formula formula, std::map<spot::formula, int>& depthMap)
+{
+    for (const auto& child : formula)
+    {
+        depthMap[ child ] = depthMap[ formula ] + 1;
+    }
+
+    return formula.is_leaf();
+}

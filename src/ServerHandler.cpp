@@ -22,19 +22,38 @@ void ServerHandler::HandleWSOnClose(crow::websocket::connection& conn, const std
 void ServerHandler::HandleWSOnMessage(crow::websocket::connection& conn, const std::string& data)
 {
     std::lock_guard<std::mutex> _(m_mtx);
-    FormulaInfo formulaInfo { data };
 
     SendInitMessages(conn, data);
+    spot::formula formula { PerformParsing(conn, data) };
+    FormulaInfo formulaInfo { spot::str_psl(formula) };
+
+    formulaInfo.depth = CalculateDepth(conn, formula);
 
     auto startTime { std::chrono::steady_clock::now() };
 
-    spot::formula formula { PerformParsing(conn, data) };
     RunAlgorithm(data, formula, conn, formulaInfo);
 
     auto endTime { std::chrono::steady_clock::now() };
-    long execTime { std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() };
+    long totalTime { std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() };
 
-    SaveCalculationData(conn, formulaInfo, execTime);
+    SaveCalculationData(conn, formulaInfo, totalTime);
+}
+
+int ServerHandler::CalculateDepth(crow::websocket::connection& conn, spot::formula& formula) const
+{
+    std::map<spot::formula, int> depthStore;
+
+    depthStore[ formula ] = 0;
+    formula.traverse(Utilities::CalculateDepth, depthStore);
+
+    auto pElement =
+        std::max_element(depthStore.begin(), depthStore.end(),
+                         [](const std::pair<spot::formula, int>& a, const std::pair<spot::formula, int>& b) {
+                             return a.second < b.second;
+                         });
+
+    conn.send_text("Formula Depth: " + std::to_string(pElement->second));
+    return pElement->second;
 }
 
 spot::formula ServerHandler::PerformParsing(crow::websocket::connection& conn, const std::string& data) const
@@ -123,12 +142,14 @@ void ServerHandler::HandleInconsistentOlg(const std::string& data, const spot::f
 
     TransitionsSystem transitionsSystem { formula };
     formulaInfo.isSat = transitionsSystem.Build(conn);
+    formulaInfo.isConsistent = false;
 
     if (!formulaInfo.isSat)
     {
         SendUnSATMsg(data, conn);
     }
 }
+
 void ServerHandler::SendUnSATMsg(const std::string& data, crow::websocket::connection& conn) const
 {
     conn.send_text(data + " is not Satisfiable!");
@@ -138,7 +159,7 @@ void ServerHandler::HandleConsistenOlg(const std::string& data, crow::websocket:
                                        FormulaInfo& formulaInfo) const
 {
     conn.send_text(data + " is Satisfiable!");
-    formulaInfo.isSat = true;
+    formulaInfo.isConsistent = formulaInfo.isSat = true;
 }
 
 ObligationSet ServerHandler::CalculateOlgSet(crow::websocket::connection& conn, const spot::formula& formula) const
@@ -155,14 +176,14 @@ void ServerHandler::HandleFF(crow::websocket::connection& conn, const std::strin
 {
     conn.send_text(data + " is equivalent to false");
     conn.send_text(data + " is unsatisfiable!");
-    formulaInfo.isSat = false;
+    formulaInfo.isConsistent = formulaInfo.isSat = false;
 }
 
 void ServerHandler::HandleTT(crow::websocket::connection& conn, const std::string& data, FormulaInfo& formulaInfo) const
 {
     conn.send_text(data + " is equivalent to true");
     conn.send_text(data + " is always satisfiable!");
-    formulaInfo.isSat = true;
+    formulaInfo.isConsistent = formulaInfo.isSat = true;
 }
 
 crow::response ServerHandler::HandleFetchExperimentsData()
@@ -175,8 +196,10 @@ crow::response ServerHandler::HandleFetchExperimentsData()
     for (int i = 0; i < m_formulasInfo.size(); i++)
     {
         json[ i ][ m_infoFields[ InfoFields::FORMULA ] ] = m_formulasInfo[ i ].formula;
+        json[ i ][ m_infoFields[ InfoFields::DEPTH ] ] = m_formulasInfo[ i ].depth;
         json[ i ][ m_infoFields[ InfoFields::EXEC_TIME ] ] = m_formulasInfo[ i ].execTime;
         json[ i ][ m_infoFields[ InfoFields::IS_SAT ] ] = m_formulasInfo[ i ].isSat;
+        json[ i ][ m_infoFields[ InfoFields::IS_CONSISTENT ] ] = m_formulasInfo[ i ].isConsistent;
     }
 
     CROW_LOG_INFO << "experiments data sent";
@@ -196,6 +219,8 @@ crow::response ServerHandler::HandleResetExperiments()
 void ServerHandler::InitInfoFields()
 {
     m_infoFields[ InfoFields::FORMULA ] = "formula";
+    m_infoFields[ InfoFields::DEPTH ] = "depth";
     m_infoFields[ InfoFields::EXEC_TIME ] = "execTime";
     m_infoFields[ InfoFields::IS_SAT ] = "isSat";
+    m_infoFields[ InfoFields::IS_CONSISTENT ] = "isConsistent";
 }
